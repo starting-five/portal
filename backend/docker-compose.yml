@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Map port 3001 on the host machine to port 3001 in the container.
+      - "3001:3001"
+    dns:
+      - 8.8.8.8 # Google's public DNS
+      - 1.1.1.1 # Cloudflare's public DNS
+    extra_hosts:
+      # Add a host entry for the host machine, which is required on some Docker setups
+      # Needed for docker and local db
+      - "host.docker.internal:host-gateway"
+    env_file:
+      # Pass environment variables from your .env file to the container.
+      - ./.env
+    restart: unless-stopped
