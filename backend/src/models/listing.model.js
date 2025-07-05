@@ -82,32 +82,37 @@ const create = async (listingData) => {
   try {
     await client.query('BEGIN');
 
-    // Insert into listings table
-    // Note: The dynamic update function is more robust for handling optional fields.
-    // This create function assumes all fields are provided.
+    // Dynamically build the INSERT query for only provided fields
+    const keys = Object.keys(listing).filter((k) => listing[k] !== undefined && listing[k] !== "");
+    const columns = keys.map((k) => k.replace(/([A-Z])/g, "_$1").toLowerCase()).join(", ");
+    const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
+    const values = keys.map((k) => listing[k]);
+
     const listingQuery = `
-      INSERT INTO listings (title, description, listing_type_id, ownership_type_id, location_id, bedrooms, bathrooms, land_size_sqm, building_size_sqm, status_id, price_unit_id, price, currency_id, year_built, facilities)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      INSERT INTO listings (${columns})
+      VALUES (${placeholders})
       RETURNING id, listing_id;
     `;
-    const listingValues = [listing.title, listing.description, listing.listing_type_id, listing.ownership_type_id, listing.location_id, listing.bedrooms, listing.bathrooms, listing.land_size_sqm, listing.building_size_sqm, listing.status_id, listing.price_unit_id, listing.price, listing.currency_id, listing.year_built, listing.facilities];
-    const listingResult = await client.query(listingQuery, listingValues);
+    const listingResult = await client.query(listingQuery, values);
     const { id: newListingId, listing_id: newPublicId } = listingResult.rows[0];
 
     // Insert images... (logic for images would go here)
     // if (images && images.length > 0) {
     //   ...
     // }
-    
+
     // Link features
     if (features && features.length > 0) {
       for (const featureId of features) {
-        await client.query('INSERT INTO listing_features (listing_id, feature_id) VALUES ($1, $2)', [newListingId, featureId]);
+        await client.query(
+          'INSERT INTO listing_features (listing_id, feature_id) VALUES ($1, $2)',
+          [newListingId, featureId]
+        );
       }
     }
 
     await client.query('COMMIT');
-    return findByPublicId(newPublicId); // Use the findByPublicId function to return the new listing
+    return findByPublicId(newPublicId);
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error creating listing:', error.message, error.stack);
