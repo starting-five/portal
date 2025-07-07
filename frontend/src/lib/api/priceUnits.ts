@@ -1,5 +1,4 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+import { API_BASE } from "./apiBase";
 
 export async function getPriceUnits() {
   const res = await fetch(`${API_BASE}/price_units`, { cache: "no-store" });

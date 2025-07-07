@@ -1,26 +1,29 @@
-# ---- Base Stage ----
-# Use an official Node.js runtime as a parent image.
-# Using alpine for a smaller image size and better security.
-# FROM node:18-alpine AS base
-FROM node:18-slim AS base
-WORKDIR /usr/src/app
+# ----------------- STAGE 1: DEPENDENCIES -----------------
+# Install production dependencies using pnpm.
+FROM node:20-alpine AS dependencies
+WORKDIR /app
 
-# ---- Dependencies Stage ----
-# Install dependencies before copying app source to leverage Docker cache.
-# This layer is only rebuilt when package.json or package-lock.json changes.
-FROM base AS dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install pnpm
+RUN npm install -g pnpm
 
-# ---- Production Stage ----
-# This is the final, lean image we'll use to run the application.
-FROM base AS production
+# Copy dependency definition files
+COPY package.json pnpm-lock.yaml ./
+
+# Install only production dependencies using the lockfile
+RUN pnpm install --prod --frozen-lockfile
+
+# ----------------- STAGE 2: PRODUCTION -----------------
+# This is the final, lean image for running the application.
+FROM node:20-alpine AS production
+WORKDIR /app
 ENV NODE_ENV=production
-# Copy installed dependencies from the 'dependencies' stage.
-COPY --from=dependencies /usr/src/app/node_modules ./node_modules
-# Copy the rest of the application source code.
+
+# Install pnpm globally in the production image
+RUN npm install -g pnpm
+
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-# The port that your app will run on.
 EXPOSE 3001
-# The command to run your app.
-CMD ["node", "index.js"]
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+CMD [ "pnpm", "start" ]
