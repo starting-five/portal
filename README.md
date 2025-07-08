@@ -9,3 +9,67 @@ There are two projects contained within this repo:
 2. Frontend <br/>
    The frontend portion of the portal would pull data from the API calls to the backend.
    Tech stack: Node, React/Next
+
+---
+
+## Docker Build & Run Instructions
+
+### Prerequisites
+- [Docker](https://www.docker.com/products/docker-desktop) and [Docker Compose](https://docs.docker.com/compose/) installed.
+
+### Building Docker Images
+
+From the root of the repository, run:
+
+```sh
+docker compose build
+```
+
+Or, if building individual images for linux/amd64 (needed to push to EC2):
+```sh
+docker build --platform linux/amd64 -t portal-backend ./backend
+docker build --platform linux/amd64 -t portal-frontend ./frontend
+```
+
+This will build both the backend and frontend images as defined in docker-compose.yml.
+
+Running the Containers
+After building, start the services with:
+
+```sh
+docker compose up
+```
+
+This will start all services (backend, frontend, and any dependencies).
+
+Stopping and Removing Containers
+To stop the containers:
+
+```sh
+docker compose down
+```
+
+To remove containers, networks, and images built by Compose:
+```sh
+docker compose down --rmi all
+```
+
+Rebuilding Images
+If you make changes to the Dockerfiles or dependencies, rebuild with:
+
+```sh
+docker compose build
+```
+
+To save images into tar files before uploading to EC2 instance:
+```sh
+docker save -o portal-backend.tar portal-backend
+docker save -o portal-frontend.tar portal-frontend
+```
+
+
+Access the app:
+
+Frontend: http://localhost:3000
+Backend API/Swagger: http://localhost:3001/api-docs
+

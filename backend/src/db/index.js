@@ -25,14 +25,14 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 //   family: 4, // Force IPv4, as Docker may have issues with IPv6 routing
 // });
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Make sure this is set in your .env
-});
-
 // const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+//   connectionString: process.env.DATABASE_URL, // Make sure this is set in your .env
 // });
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+});
 
 // Test the database connection when the module is loaded.
 // This provides immediate feedback when the server starts.

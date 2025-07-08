@@ -29,6 +29,7 @@ app.listen(PORT, async () => {
 // --- API Documentation (OpenAPI/Swagger) ---
         // url: `http://localhost:${PORT}/api/v1`,
         //  url: `https://portal-alpha.onrender.com/api/v1`,
+        // url: `http://backend:3001/api/v1`
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -41,10 +42,8 @@ const swaggerOptions = {
       },
     },
     servers: [
-      {
-        url: `https://portal-alpha.onrender.com/api/v1`,
-        description: 'Development server - alpha002',
-      },
+      { url: `http://localhost:${PORT}/api/v1`, description: 'Local (host)' },
+      { url: `http://backend:3001/api/v1`, description: 'Docker Compose (internal)' },
     ],
     components: {
       schemas: {
@@ -409,19 +408,8 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
+app.use('/api/v1', apiRouter);
+
 // Serve the interactive API documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
-// --- Routes ---
-// A simple health-check route
-app.get('/', (req, res) => {
-  res.status(200).send('Welcome to the Bali Real Estate Portal API!');
-});
-
-// Mount your API routers here
-app.use('/api/v1', apiRouter);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
