@@ -1,0 +1,19 @@
+{
+    "Features": {
+        "beachfront": "Tepi Pantai",
+        "cliff_top": "Tepi Tebing",
+        "garden": "Taman",
+        "golf_view": "Pemandangan Golf",
+        "investment": "Investasi",
+        "ocean_view": "Pemandangan Laut",
+        "pool": "Kolam Renang",
+        "quiet": "Tenang",
+        "resort": "Resor",
+        "rice_view": "Pemandangan Sawah",
+        "sunset_view": "Pemandangan Matahari Terbenam"
+    },
+    "HomePage": {
+        "description": "Ini adalah halaman beranda di mana Anda dapat menemukan pembaruan dan fitur terbaru.",
+        "title": "Selamat datang di Aplikasi Kami"
+    }
+}

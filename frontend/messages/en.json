@@ -1,0 +1,19 @@
+{
+    "HomePage": {
+        "title": "Welcome to Our Application",
+        "description": "This is the home page where you can find the latest updates and features."
+    },
+        "Features": {
+        "beachfront": "Beachfront",
+        "cliff_top": "Cliff Top",
+        "garden": "Garden",
+        "golf_view": "Golf View",
+        "investment": "Investment",
+        "ocean_view": "Ocean View",
+        "pool": "Pool",
+        "quiet": "Quiet",
+        "resort": "Resort",
+        "rice_view": "Rice View",
+        "sunset_view": "Sunset View"
+    }
+}
