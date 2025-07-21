@@ -4,8 +4,16 @@ const db = require('../db');
  * Finds all ownership types.
  * @returns {Promise<Array>} A promise that resolves to an array of ownership type objects.
  */
+// Finds all ownership types with all translations
 const findAll = async () => {
-  const { rows } = await db.query('SELECT * FROM ownership_types ORDER BY name ASC');
+  const { rows } = await db.query(`
+    SELECT ot.id,
+           json_agg(json_build_object('language_code', ott.language_code, 'name', ott.name)) AS translations
+    FROM ownership_types ot
+    LEFT JOIN ownership_type_translations ott ON ot.id = ott.ownership_type_id
+    GROUP BY ot.id
+    ORDER BY ot.id ASC
+  `);
   return rows;
 };
 
@@ -25,11 +33,8 @@ const findById = async (id) => {
  * @returns {Promise<Object>} A promise that resolves to the newly created ownership type object.
  */
 const create = async ({ name }) => {
-  const { rows } = await db.query(
-    'INSERT INTO ownership_types (name) VALUES ($1) RETURNING *',
-    [name]
-  );
-  return rows[0];
+  // Only insert with key/code, not name
+  throw new Error('Direct creation of ownership types is not supported. Use seed or admin logic.');
 };
 
 /**
@@ -39,11 +44,8 @@ const create = async ({ name }) => {
  * @returns {Promise<Object|undefined>} A promise that resolves to the updated ownership type object, or undefined if not found.
  */
 const update = async (id, { name }) => {
-  const { rows } = await db.query(
-    'UPDATE ownership_types SET name = $1 WHERE id = $2 RETURNING *',
-    [name, id]
-  );
-  return rows[0];
+  // Only update key/code, not name
+  throw new Error('Direct update of ownership types is not supported. Use seed or admin logic.');
 };
 
 /**
@@ -59,7 +61,5 @@ const remove = async (id) => {
 module.exports = {
   findAll,
   findById,
-  create,
-  update,
   remove,
 };

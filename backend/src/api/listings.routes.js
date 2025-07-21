@@ -15,6 +15,15 @@ const listingsController = require('../controllers/listings.controller');
  *   get:
  *     summary: Retrieve a list of all listings
  *     tags: [Listings]
+ *     parameters:
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
+ *           enum: [en, id, es]
+ *           default: en
+ *         required: false
+ *         description: Language code for listing title and description (en, id, es). Defaults to English with fallback.
  *     responses:
  *       200:
  *         description: A list of listings.
@@ -43,6 +52,14 @@ router.get('/', listingsController.getAllListings);
  *           type: string
  *         required: true
  *         description: Human-readable unique ID of the listing to retrieve (e.g., 1234-5678)
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
+ *           enum: [en, id, es]
+ *           default: en
+ *         required: false
+ *         description: Language code for listing title and description (en, id, es). Defaults to English with fallback.
  *     responses:
  *       200:
  *         description: A single listing object.
@@ -67,7 +84,53 @@ router.get('/:listing_id', listingsController.getListingById);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/NewListing'
+ *             type: object
+ *             properties:
+ *               location_id:
+ *                 type: integer
+ *               listing_type_id:
+ *                 type: integer
+ *               ownership_type_id:
+ *                 type: integer
+ *               status_id:
+ *                 type: integer
+ *               price:
+ *                 type: number
+ *               # currency_id and price_unit_id removed
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *               features:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               translations:
+ *                 type: array
+ *                 description: Array of translations for title and description
+ *                 items:
+ *                   type: object
+ *                   properties:
+*                     language_code:
+*                       type: string
+*                       enum: [en, id, es]
+*                       description: Language code for this translation (English, Indonesian, Spanish)
+*                     title:
+*                       type: string
+*                       description: Translated title for the listing
+*                     description:
+*                       type: string
+*                       description: Translated description for the listing
+ *             required:
+ *               - location_id
+ *               - listing_type_id
+ *               - ownership_type_id
+ *               - status_id
+ *               - price
+ *               - translations
  *     responses:
  *       201:
  *         description: The created listing.
@@ -97,7 +160,52 @@ router.post('/', listingsController.createListing);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UpdateListing'
+ *             type: object
+ *             properties:
+ *               location_id:
+ *                 type: integer
+ *               listing_type_id:
+ *                 type: integer
+ *               ownership_type_id:
+ *                 type: integer
+ *               status_id:
+ *                 type: integer
+ *               price:
+ *                 type: number
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *               features:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               translations:
+ *                 type: array
+ *                 description: Array of translations for title and description
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     language_code:
+ *                       type: string
+ *                       enum: [en, id, es]
+ *                       description: Language code for this translation (English, Indonesian, Spanish)
+ *                     title:
+ *                       type: string
+ *                       description: Translated title for the listing
+ *                     description:
+ *                       type: string
+ *                       description: Translated description for the listing
+ *             required:
+ *               - location_id
+ *               - listing_type_id
+ *               - ownership_type_id
+ *               - status_id
+ *               - price
+ *               - translations
  *     responses:
  *       200:
  *         description: The updated listing.
