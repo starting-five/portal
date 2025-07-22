@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
+  const t = useTranslations();
+
   return (
     <main className="p-8">
+      <h1 className="text-3xl font-bold mb-4">{t("HomePage.title")}</h1>
       <h1 className="text-2xl font-bold mb-4">Portal Navigation</h1>
+
       <ul className="space-y-4">
         <li>
           <Link href="/listings" className="text-blue-600 underline">
