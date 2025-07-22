@@ -1,0 +1,19 @@
+{
+    "Features": {
+        "beachfront": "Frente a la playa",
+        "cliff_top": "Acantilado",
+        "garden": "Jardín",
+        "golf_view": "Vista al golf",
+        "investment": "Inversión",
+        "ocean_view": "Vista al mar",
+        "pool": "Piscina",
+        "quiet": "Tranquilo",
+        "resort": "Resort",
+        "rice_view": "Vista al arrozal",
+        "sunset_view": "Vista al atardecer"
+    },
+    "HomePage": {
+        "description": "Esta es la página de inicio donde puedes encontrar las últimas actualizaciones y características.",
+        "title": "Bienvenido a Nuestra Aplicación"
+    }
+}
