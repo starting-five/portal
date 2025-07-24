@@ -19,7 +19,8 @@ const getAllListingTypes = async (req, res) => {
 const getListingTypeById = async (req, res) => {
   try {
     const { id } = req.params;
-    const type = await ListingType.findById(id);
+    const lang = req.query.lang || 'en';
+    const type = await ListingType.findById(id, lang);
     if (!type) {
       return res.status(404).json({ message: 'Listing type not found' });
     }
@@ -81,6 +82,25 @@ module.exports = {
   getAllListingTypes,
   getListingTypeById,
   createListingType,
-  updateListingType,
   deleteListingType,
+  /**
+   * Updates the translated name for a listing type.
+   */
+  updateListingTypeTranslation: async (req, res) => {
+    try {
+      const { id, lang } = req.params;
+      const { name } = req.body;
+      if (!name) {
+        return res.status(400).json({ message: 'Missing translated name in request body.' });
+      }
+      const updated = await ListingType.updateTranslation(id, lang, name);
+      if (!updated) {
+        return res.status(404).json({ message: 'Listing type or translation not found.' });
+      }
+      res.status(200).json(updated);
+    } catch (error) {
+      console.error('Error updating listing type translation:', error.stack);
+      res.status(500).json({ message: 'An error occurred while updating the listing type translation.' });
+    }
+  },
 };

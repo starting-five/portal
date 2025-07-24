@@ -5,8 +5,9 @@ const Listing = require('../models/listing.model');
  */
 const getAllListings = async (req, res) => {
   try {
-    // This can be extended to pass req.query to a filter function
-    const listings = await Listing.findAll(); // Or Listing.findByFilters(req.query);
+    const lang = req.query.lang || 'en';
+    // Fetch listings with translations for the requested language
+    const listings = await Listing.findAllWithTranslations(lang); // Or Listing.findByFiltersWithTranslations(req.query, lang);
     res.status(200).json(listings);
   } catch (error) {
     console.error('Error fetching listings:', error.stack);
@@ -20,7 +21,9 @@ const getAllListings = async (req, res) => {
 const getListingById = async (req, res) => {
   try {
     const { listing_id } = req.params;
-    const listing = await Listing.findByPublicId(listing_id);
+    const lang = req.query.lang || 'en';
+    // Fetch listing with translation for the requested language
+    const listing = await Listing.findByPublicIdWithTranslation(listing_id, lang);
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
@@ -36,8 +39,9 @@ const getListingById = async (req, res) => {
  */
 const createListing = async (req, res) => {
   try {
-    // In a real app, you'd get IDs for location, type, etc. from the request body
-    const newListing = await Listing.create(req.body);
+    // Only use supported fields for creating a listing
+    const { currency, ...rest } = req.body;
+    const newListing = await Listing.create(rest);
     res.status(201).json(newListing);
   } catch (error) {
     console.error('Error creating listing:', error.stack);
@@ -51,7 +55,10 @@ const createListing = async (req, res) => {
 const updateListing = async (req, res) => {
   try {
     const { listing_id } = req.params;
-    const updatedListing = await Listing.updateByPublicId(listing_id, req.body);
+    // Only use supported fields for updating a listing
+    // Remove unsupported fields from req.body
+    const { currency, currency_id, price_unit, ...rest } = req.body;
+    const updatedListing = await Listing.updateByPublicId(listing_id, rest);
     if (!updatedListing) {
       return res.status(404).json({ message: 'Listing not found' });
     }

@@ -5,7 +5,8 @@ const Feature = require('../models/feature.model');
  */
 const getAllFeatures = async (req, res) => {
   try {
-    const features = await Feature.findAll();
+    const language = req.query.language;
+    const features = await Feature.findAll(language);
     res.status(200).json(features);
   } catch (error) {
     console.error('Error fetching features:', error.stack);
@@ -19,7 +20,8 @@ const getAllFeatures = async (req, res) => {
 const getFeatureById = async (req, res) => {
   try {
     const { id } = req.params;
-    const feature = await Feature.findById(id);
+    const language = req.query.language;
+    const feature = await Feature.findById(id, language);
     if (!feature) {
       return res.status(404).json({ message: 'Feature not found' });
     }

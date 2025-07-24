@@ -1,4 +1,5 @@
 const OwnershipType = require('../models/ownership_type.model');
+const OwnershipTypeTranslation = require('../models/ownership_type_translation.model');
 
 /**
  * Retrieves all ownership types.
@@ -19,11 +20,19 @@ const getAllOwnershipTypes = async (req, res) => {
 const getOwnershipTypeById = async (req, res) => {
   try {
     const { id } = req.params;
+    const { language } = req.query;
     const type = await OwnershipType.findById(id);
     if (!type) {
       return res.status(404).json({ message: 'Ownership type not found' });
     }
-    res.status(200).json(type);
+    if (language) {
+      const translation = await OwnershipTypeTranslation.findByTypeAndLanguage(type.id, language);
+      return res.status(200).json({
+        id: type.id,
+        name: translation ? translation.name : null
+      });
+    }
+    res.status(200).json({ id: type.id });
   } catch (error) {
     console.error('Error fetching ownership type by ID:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching the ownership type.' });

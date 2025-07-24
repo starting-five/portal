@@ -1,3 +1,5 @@
+
+const db = require('../db');
 const ListingStatus = require('../models/listing_status.model');
 
 /**
@@ -17,13 +19,22 @@ const getAllListingStatuses = async (req, res) => {
  * Retrieves a single listing status by its ID.
  */
 const getListingStatusById = async (req, res) => {
+  const language = req.query.language || 'en';
   try {
     const { id } = req.params;
-    const status = await ListingStatus.findById(id);
-    if (!status) {
+    const { rows } = await db.query(`
+      SELECT s.id, s.key, COALESCE(t_lang.name, t_en.name) AS name
+      FROM listing_statuses s
+      LEFT JOIN listing_statuses_translations t_lang
+        ON s.id = t_lang.listing_status_id AND t_lang.language_code = $2
+      LEFT JOIN listing_statuses_translations t_en
+        ON s.id = t_en.listing_status_id AND t_en.language_code = 'en'
+      WHERE s.id = $1
+    `, [id, language]);
+    if (!rows[0]) {
       return res.status(404).json({ message: 'Listing status not found' });
     }
-    res.status(200).json(status);
+    res.status(200).json(rows[0]);
   } catch (error) {
     console.error('Error fetching listing status by ID:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching the listing status.' });
