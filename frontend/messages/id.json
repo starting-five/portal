@@ -15,5 +15,65 @@
     "HomePage": {
         "description": "Ini adalah halaman beranda di mana Anda dapat menemukan pembaruan dan fitur terbaru.",
         "title": "Selamat datang di Aplikasi Kami"
+    },
+    "ListingForm": {
+        "bathrooms_label": "Kamar Mandi",
+        "bathrooms_placeholder": "mis. 2",
+        "bedrooms_label": "Kamar Tidur",
+        "bedrooms_placeholder": "mis. 3",
+        "building_size_label": "Luas Bangunan (m²)",
+        "building_size_placeholder": "mis. 120",
+        "cancel": "Batal",
+        "description_edit": "Edit informasi listing Anda di bawah ini",
+        "description_label": "Deskripsi *",
+        "description_new": "Isi detail di bawah ini untuk membuat listing properti baru",
+        "description_placeholder": "Deskripsi singkat",
+        "features_label": "Fitur",
+        "form_invalid": "Silakan perbaiki kesalahan yang ditandai",
+        "land_size_label": "Luas Tanah (m²)",
+        "land_size_placeholder": "mis. 300",
+        "listing_type_label": "Jenis Listing *",
+        "listing_type_placeholder": "Pilih jenis listing",
+        "location_label": "Lokasi *",
+        "location_placeholder": "Pilih lokasi",
+        "ownership_type_label": "Jenis Kepemilikan *",
+        "ownership_type_placeholder": "Pilih jenis kepemilikan",
+        "price_label": "Harga *",
+        "price_placeholder": "mis. 250000",
+        "pricing_status_header": "Harga & Status",
+        "property_details": "Detail Properti",
+        "property_details_header": "Detail Properti",
+        "required_field": "Bidang wajib",
+        "save": "Simpan",
+        "size_features_header": "Ukuran & Fitur",
+        "status_label": "Status *",
+        "status_placeholder": "Pilih status",
+        "title_edit": "Edit Listing",
+        "title_error_message": "Bidang ini wajib diisi dalam semua bahasa",
+        "title_label": "Judul *",
+        "title_new": "Tambah Listing Baru",
+        "title_placeholder": "Judul properti",
+        "year_built_label": "Tahun Dibangun",
+        "year_built_placeholder": "mis. 2015"
+    },
+    "LocaleSwitcher": {
+        "aria_label": "Ganti bahasa"
+    },
+    "metadata": {
+        "description": "Portal untuk mengelola listing properti",
+        "title": "Portal Properti"
+    },
+    "MyListings": {
+        "add_listing": "Tambahkan Listing",
+        "description": "Lihat dan kelola listing properti saya",
+        "error": "Gagal memuat listing. Silakan coba lagi nanti.",
+        "title": "Listing Saya"
+    },
+    "Sidebar": {
+        "home": "Beranda",
+        "my_listings": "Listing Saya",
+        "new_listing": "Listing Baru",
+        "profile": "Profil",
+        "settings": "Pengaturan"
     }
 }

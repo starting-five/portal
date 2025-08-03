@@ -1,9 +1,5 @@
 {
-    "HomePage": {
-        "title": "Welcome to Our Application",
-        "description": "This is the home page where you can find the latest updates and features."
-    },
-        "Features": {
+    "Features": {
         "beachfront": "Beachfront",
         "cliff_top": "Cliff Top",
         "garden": "Garden",
@@ -15,5 +11,69 @@
         "resort": "Resort",
         "rice_view": "Rice View",
         "sunset_view": "Sunset View"
+    },
+    "HomePage": {
+        "description": "This is the home page where you can find the latest updates and features.",
+        "title": "Welcome to Our Application"
+    },
+    "ListingForm": {
+        "bathrooms_label": "Bathrooms",
+        "bathrooms_placeholder": "e.g. 2",
+        "bedrooms_label": "Bedrooms",
+        "bedrooms_placeholder": "e.g. 3",
+        "building_size_label": "Building Size (sqm)",
+        "building_size_placeholder": "e.g. 120",
+        "cancel": "Cancel",
+        "description_edit": "Edit your listing information below",
+        "description_label": "Description *",
+        "description_new": "Fill out the details below to create a new property listing",
+        "description_placeholder": "Short description",
+        "features_label": "Features",
+        "form_invalid": "Please correct the highlighted errors",
+        "land_size_label": "Land Size (sqm)",
+        "land_size_placeholder": "e.g. 300",
+        "listing_type_label": "Listing Type *",
+        "listing_type_placeholder": "Select listing type",
+        "location_label": "Location *",
+        "location_placeholder": "Select location",
+        "ownership_type_label": "Ownership Type *",
+        "ownership_type_placeholder": "Select ownership type",
+        "price_label": "Price *",
+        "price_placeholder": "e.g. 250000",
+        "pricing_status_header": "Pricing & Status",
+        "property_details": "Property Details",
+        "property_details_header": "Property Details",
+        "required_field": "Required field",
+        "save": "Save",
+        "size_features_header": "Size & Features",
+        "status_label": "Status *",
+        "status_placeholder": "Select status",
+        "title_edit": "Edit Listing",
+        "title_error_message": "This field is required in all languages",
+        "title_label": "Title *",
+        "title_new": "Add New Listing",
+        "title_placeholder": "Property title",
+        "year_built_label": "Year Built",
+        "year_built_placeholder": "e.g. 2015"
+    },
+    "LocaleSwitcher": {
+        "aria_label": "Change language"
+    },
+    "metadata": {
+        "description": "A portal for managing property listings",
+        "title": "Property Portal"
+    },
+    "MyListings": {
+        "add_listing": "Add Listing",
+        "description": "View and manage my property listings",
+        "error": "Failed to load listings. Please try again later.",
+        "title": "My Listings"
+    },
+    "Sidebar": {
+        "home": "Home",
+        "my_listings": "My Listings",
+        "new_listing": "New Listing",
+        "profile": "Profile",
+        "settings": "Settings"
     }
 }

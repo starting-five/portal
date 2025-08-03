@@ -113,7 +113,7 @@ const swaggerOptions = {
           example: {
             id: 1,
             listing_id: 1,
-            url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914',
+            url: 'https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg',
             alt_text: 'Villa exterior view with pool',
             created_at: '2023-10-27T10:00:00Z',
           },

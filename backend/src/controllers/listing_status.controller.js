@@ -2,89 +2,108 @@
 const db = require('../db');
 const ListingStatus = require('../models/listing_status.model');
 
-/**
- * Retrieves all listing statuses.
- */
+
+// Get all listing statuses with translations
 const getAllListingStatuses = async (req, res) => {
   try {
+    // Always return all listing statuses with labels object
     const statuses = await ListingStatus.findAll();
-    res.status(200).json(statuses);
+    const formatted = statuses.map(s => ({
+      id: s.id,
+      key: s.key,
+      labels: Array.isArray(s.translations)
+        ? s.translations.reduce((acc, t) => {
+            if (t.language_code && t.name) acc[t.language_code] = t.name;
+            return acc;
+          }, {})
+        : {}
+    }));
+    res.status(200).json(formatted);
   } catch (error) {
     console.error('Error fetching listing statuses:', error.stack);
-    res.status(500).json({ message: 'An error occurred while fetching listing statuses.' });
+    res.status(500).json({ error: 'Failed to fetch listing statuses.' });
   }
 };
 
-/**
- * Retrieves a single listing status by its ID.
- */
+// Get a single listing status by ID with all translations
 const getListingStatusById = async (req, res) => {
-  const language = req.query.language || 'en';
   try {
     const { id } = req.params;
-    const { rows } = await db.query(`
-      SELECT s.id, s.key, COALESCE(t_lang.name, t_en.name) AS name
-      FROM listing_statuses s
-      LEFT JOIN listing_statuses_translations t_lang
-        ON s.id = t_lang.listing_status_id AND t_lang.language_code = $2
-      LEFT JOIN listing_statuses_translations t_en
-        ON s.id = t_en.listing_status_id AND t_en.language_code = 'en'
-      WHERE s.id = $1
-    `, [id, language]);
-    if (!rows[0]) {
-      return res.status(404).json({ message: 'Listing status not found' });
+    // Always return the status with labels object
+    const statuses = await ListingStatus.findAll();
+    const found = statuses.find(s => String(s.id) === String(id));
+    if (!found) {
+      return res.status(404).json({ error: 'Listing status not found.' });
     }
-    res.status(200).json(rows[0]);
+    const formatted = {
+      id: found.id,
+      key: found.key,
+      labels: Array.isArray(found.translations)
+        ? found.translations.reduce((acc, t) => {
+            if (t.language_code && t.name) acc[t.language_code] = t.name;
+            return acc;
+          }, {})
+        : {}
+    };
+    res.status(200).json(formatted);
   } catch (error) {
     console.error('Error fetching listing status by ID:', error.stack);
-    res.status(500).json({ message: 'An error occurred while fetching the listing status.' });
+    res.status(500).json({ error: 'Failed to fetch listing status.' });
   }
 };
 
-/**
- * Creates a new listing status.
- */
+// Create a new listing status with translations
 const createListingStatus = async (req, res) => {
+  const { key, translations } = req.body;
+  if (!key || typeof key !== 'string' || !key.trim()) {
+    return res.status(400).json({ error: 'Key is required and must be a non-empty string.' });
+  }
+  if (!Array.isArray(translations) || translations.length === 0) {
+    return res.status(400).json({ error: 'Translations array required.' });
+  }
   try {
-    const newStatus = await ListingStatus.create(req.body);
+    const newStatus = await ListingStatus.create({ key: key.trim(), translations });
     res.status(201).json(newStatus);
   } catch (error) {
     console.error('Error creating listing status:', error.stack);
-    res.status(500).json({ message: 'An error occurred while creating the listing status.' });
+    res.status(500).json({ error: 'Failed to create listing status.' });
   }
 };
 
-/**
- * Updates an existing listing status.
- */
+// Update an existing listing status and its translations
 const updateListingStatus = async (req, res) => {
+  const { id } = req.params;
+  const { key, translations } = req.body;
+  if (!key || typeof key !== 'string' || !key.trim()) {
+    return res.status(400).json({ error: 'Key is required and must be a non-empty string.' });
+  }
+  if (!Array.isArray(translations) || translations.length === 0) {
+    return res.status(400).json({ error: 'Translations array required.' });
+  }
   try {
-    const { id } = req.params;
-    const updatedStatus = await ListingStatus.update(id, req.body);
+    const updatedStatus = await ListingStatus.update(id, { key: key.trim(), translations });
     if (!updatedStatus) {
-      return res.status(404).json({ message: 'Listing status not found' });
+      return res.status(404).json({ error: 'Listing status not found.' });
     }
     res.status(200).json(updatedStatus);
   } catch (error) {
     console.error('Error updating listing status:', error.stack);
-    res.status(500).json({ message: 'An error occurred while updating the listing status.' });
+    res.status(500).json({ error: 'Failed to update listing status.' });
   }
 };
 
-/**
- * Deletes a listing status.
- */
+// Delete a listing status
 const deleteListingStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedCount = await ListingStatus.remove(id);
     if (deletedCount === 0) {
-      return res.status(404).json({ message: 'Listing status not found' });
+      return res.status(404).json({ error: 'Listing status not found.' });
     }
-    res.status(204).send(); // 204 No Content is standard for a successful deletion
+    res.status(204).send();
   } catch (error) {
     console.error('Error deleting listing status:', error.stack);
-    res.status(500).json({ message: 'An error occurred while deleting the listing status.' });
+    res.status(500).json({ error: 'Failed to delete listing status.' });
   }
 };
 

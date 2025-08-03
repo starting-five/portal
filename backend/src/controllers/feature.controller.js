@@ -5,9 +5,19 @@ const Feature = require('../models/feature.model');
  */
 const getAllFeatures = async (req, res) => {
   try {
-    const language = req.query.language;
-    const features = await Feature.findAll(language);
-    res.status(200).json(features);
+    const features = await Feature.findAll();
+    // Map translations array to labels object
+    const mapped = features.map(f => ({
+      id: f.id,
+      key: f.key,
+      category_key: f.category_key,
+      sort_order: f.sort_order,
+      labels: (f.translations || []).reduce((acc, t) => {
+        acc[t.language_code] = t.name;
+        return acc;
+      }, {})
+    }));
+    res.status(200).json(mapped);
   } catch (error) {
     console.error('Error fetching features:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching features.' });
@@ -20,12 +30,22 @@ const getAllFeatures = async (req, res) => {
 const getFeatureById = async (req, res) => {
   try {
     const { id } = req.params;
-    const language = req.query.language;
-    const feature = await Feature.findById(id, language);
+    const feature = await Feature.findById(id);
     if (!feature) {
       return res.status(404).json({ message: 'Feature not found' });
     }
-    res.status(200).json(feature);
+    // Map translations array to labels object
+    const mapped = {
+      id: feature.id,
+      key: feature.key,
+      category_key: feature.category_key,
+      sort_order: feature.sort_order,
+      labels: (feature.translations || []).reduce((acc, t) => {
+        acc[t.language_code] = t.name;
+        return acc;
+      }, {})
+    };
+    res.status(200).json(mapped);
   } catch (error) {
     console.error('Error fetching feature by ID:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching the feature.' });

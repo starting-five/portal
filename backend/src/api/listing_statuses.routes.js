@@ -15,14 +15,8 @@ const listingStatusController = require('../controllers/listing_status.controlle
  *   get:
  *     summary: Retrieve a list of all listing statuses
  *     tags: [Listing Statuses]
- *     parameters:
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *           example: en
- *         required: false
- *         description: Language code for the translated status name (defaults to 'en')
+ 
+ *     # No query parameters
  *     responses:
  *       200:
  *         description: A list of listing statuses.
@@ -37,8 +31,11 @@ const listingStatusController = require('../controllers/listing_status.controlle
  *                     type: integer
  *                   key:
  *                     type: string
- *                   name:
- *                     type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     description: Object mapping language codes to translated status names
  */
 // GET /api/v1/listing_statuses - Retrieve all listing statuses
 router.get('/', listingStatusController.getAllListingStatuses);
@@ -56,13 +53,6 @@ router.get('/', listingStatusController.getAllListingStatuses);
  *           type: integer
  *         required: true
  *         description: Numeric ID of the listing status to retrieve
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *           example: en
- *         required: false
- *         description: Language code for the translated status name (defaults to 'en')
  *     responses:
  *       200:
  *         description: A single listing status object.
@@ -75,8 +65,11 @@ router.get('/', listingStatusController.getAllListingStatuses);
  *                   type: integer
  *                 key:
  *                   type: string
- *                 name:
- *                   type: string
+ *                 labels:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: string
+ *                   description: Object mapping language codes to translated status names
  *       404:
  *         description: Listing status not found
  */

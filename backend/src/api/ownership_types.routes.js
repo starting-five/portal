@@ -3,6 +3,34 @@
  * tags:
  *   name: Ownership Types
  *   description: API for managing ownership types (e.g., freehold, leasehold)
+ * components:
+ *   schemas:
+ *     OwnershipType:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         key:
+ *           type: string
+ *         labels:
+ *           type: object
+ *           additionalProperties:
+ *             type: string
+ *           example:
+ *             en: Freehold
+ *             id: Hak Milik
+ *             es: Propiedad absoluta
+ *     OwnershipTypeTranslation:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         ownership_type_id:
+ *           type: integer
+ *         language_code:
+ *           type: string
+ *         name:
+ *           type: string
  */
 
 /**
@@ -23,27 +51,23 @@
  *                 properties:
  *                   id:
  *                     type: integer
- *                   translations:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         language_code:
- *                           type: string
- *                         name:
- *                           type: string
+ *                   key:
+ *                     type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     example:
+ *                       en: Freehold
+ *                       id: Hak Milik
+ *                       es: Propiedad absoluta
  */
 const express = require('express');
 const router = express.Router();
 const ownershipTypeController = require('../controllers/ownership_type.controller');
 const ownershipTypeTranslationController = require('../controllers/ownership_type_translation.controller');
 
-/**
- * @swagger
- * tags:
- *   name: Ownership Types
- *   description: API for managing ownership types (e.g., freehold, leasehold)
- */
+// ...existing code...
 
 /**
  * @swagger
@@ -51,13 +75,6 @@ const ownershipTypeTranslationController = require('../controllers/ownership_typ
  *   get:
  *     summary: Retrieve a list of all ownership types
  *     tags: [Ownership Types]
- *     parameters:
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *         required: false
- *         description: Language code for translations (e.g., 'en', 'es'). If provided, returns translated names.
  *     responses:
  *       200:
  *         description: A list of ownership types.
@@ -71,52 +88,6 @@ const ownershipTypeTranslationController = require('../controllers/ownership_typ
 // GET /api/v1/ownership_types - Retrieve all ownership types (optionally translated)
 router.get('/', ownershipTypeController.getAllOwnershipTypes);
 
-/**
- * @swagger
- * /ownership_types/translations:
- *   get:
- *     summary: Retrieve all ownership type translations
- *     tags: [Ownership Types]
- *     responses:
- *       200:
- *         description: A list of ownership type translations.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/OwnershipTypeTranslation'
- */
-// GET /api/v1/ownership_types/translations - Retrieve all ownership type translations
-router.get('/translations', ownershipTypeTranslationController.getAllOwnershipTypeTranslations);
-
-/**
- * @swagger
- * /ownership_types/{id}/translations:
- *   get:
- *     summary: Retrieve translations for a specific ownership type
- *     tags: [Ownership Types]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: Numeric ID of the ownership type
- *     responses:
- *       200:
- *         description: Ownership type translations.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/OwnershipTypeTranslation'
- *       404:
- *         description: Ownership type not found
- */
-// GET /api/v1/ownership_types/:id/translations - Retrieve translations for a specific ownership type
-router.get('/:id/translations', ownershipTypeTranslationController.getOwnershipTypeTranslationsById);
 
 /**
  * @swagger
@@ -131,12 +102,6 @@ router.get('/:id/translations', ownershipTypeTranslationController.getOwnershipT
  *           type: integer
  *         required: true
  *         description: Numeric ID of the ownership type to retrieve
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *         required: false
- *         description: Language code for translation (e.g., 'en', 'es'). If provided, returns translated name.
  *     responses:
  *       200:
  *         description: A single ownership type object.
@@ -163,6 +128,12 @@ router.get('/:id', ownershipTypeController.getOwnershipTypeById);
  *           schema:
  *             type: object
  *             properties:
+ *               key:
+ *                 type: string
+ *                 description: Unique key for the ownership type (e.g., 'freehold')
+ *               sort_order:
+ *                 type: integer
+ *                 description: Order for display (lower comes first)
  *               translations:
  *                 type: array
  *                 items:
@@ -175,6 +146,16 @@ router.get('/:id', ownershipTypeController.getOwnershipTypeById);
  *                     name:
  *                       type: string
  *                       description: The translated name for the ownership type
+ *           example:
+ *             key: freehold
+ *             sort_order: 1
+ *             translations:
+ *               - language_code: en
+ *                 name: Freehold
+ *               - language_code: id
+ *                 name: Hak Milik
+ *               - language_code: es
+ *                 name: Propiedad absoluta
  *     responses:
  *       201:
  *         description: The created ownership type.
