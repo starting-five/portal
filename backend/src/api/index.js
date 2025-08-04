@@ -9,6 +9,7 @@ const listingStatusesRouter = require('./listing_statuses.routes');
 const listingTypesRouter = require('./listing_types.routes');
 const locationsRouter = require('./locations.routes');
 const ownershipTypesRouter = require('./ownership_types.routes');
+const lookupsRouter = require('./lookups.routes');
 
 // Mount the listings router at /listings
 router.use('/listings', listingsRouter);
@@ -37,5 +38,8 @@ router.use('/ownership_types', ownershipTypesRouter);
 // When you add user routes, you would mount them here:
 // const usersRouter = require('./users.routes');
 // router.use('/users', usersRouter);
+// Mount the lookups router at /lookups
+const oRouter = require('./lookups.routes');
+router.use('/lookups', lookupsRouter);
 
 module.exports = router;

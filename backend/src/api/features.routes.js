@@ -11,13 +11,7 @@
  *           type: integer
  *         required: true
  *         description: Numeric ID of the feature to retrieve
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *           example: en
- *         required: false
- *         description: Language code for the translated feature name (optional, returns all if omitted)
+ *       # Language param removed
  *     responses:
  *       200:
  *         description: A single feature object.
@@ -34,15 +28,11 @@
  *                   type: string
  *                 sort_order:
  *                   type: integer
- *                 translations:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       language_code:
- *                         type: string
- *                       name:
- *                         type: string
+ *                 labels:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: string
+ *                   description: Object mapping language codes to translated feature names
  *       404:
  *         description: Feature not found
  */
@@ -52,14 +42,7 @@
  *   get:
  *     summary: Retrieve a list of all features
  *     tags: [Features]
- *     parameters:
- *       - in: query
- *         name: language
- *         schema:
- *           type: string
- *           example: en
- *         required: false
- *         description: Language code for the translated feature name (optional, returns all if omitted)
+ *     # No query parameters
  *     responses:
  *       200:
  *         description: A list of features.
@@ -78,15 +61,11 @@
  *                     type: string
  *                   sort_order:
  *                     type: integer
- *                   translations:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         language_code:
- *                           type: string
- *                         name:
- *                           type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     description: Object mapping language codes to translated feature names
  */
 /**
  * @swagger
@@ -119,15 +98,11 @@
  *                     type: string
  *                   sort_order:
  *                     type: integer
- *                   translations:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         language_code:
- *                           type: string
- *                         name:
- *                           type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     description: Object mapping language codes to translated feature names
  */
 const express = require('express');
 const router = express.Router();

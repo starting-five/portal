@@ -86,17 +86,46 @@ router.get('/:listing_id', listingsController.getListingById);
  *           schema:
  *             type: object
  *             properties:
- *               location_id:
+ *               translations:
+ *                 type: array
+ *                 description: Array of translations for title and description
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     language_code:
+ *                       type: string
+ *                       enum: [en, id, es]
+ *                       description: Language code for this translation (English, Indonesian, Spanish)
+ *                     title:
+ *                       type: string
+ *                       description: Translated title for the listing
+ *                     description:
+ *                       type: string
+ *                       description: Translated description for the listing
+ *               ownership_type_id:
  *                 type: integer
  *               listing_type_id:
  *                 type: integer
- *               ownership_type_id:
+ *               location_id:
  *                 type: integer
- *               status_id:
+ *               building_size_sqm:
+ *                 type: number
+ *               land_size_sqm:
+ *                 type: number
+ *               bedrooms:
+ *                 type: integer
+ *               bathrooms:
  *                 type: integer
  *               price:
  *                 type: number
- *               # currency_id and price_unit_id removed
+ *               year_built:
+ *                 type: integer
+ *               status_id:
+ *                 type: integer
+ *               features:
+ *                 type: array
+ *                 items:
+ *                   type: integer
  *               images:
  *                 type: array
  *                 items:
@@ -104,32 +133,21 @@ router.get('/:listing_id', listingsController.getListingById);
  *                   properties:
  *                     url:
  *                       type: string
- *               features:
- *                 type: array
- *                 items:
- *                   type: integer
- *               translations:
- *                 type: array
- *                 description: Array of translations for title and description
- *                 items:
- *                   type: object
- *                   properties:
-*                     language_code:
-*                       type: string
-*                       enum: [en, id, es]
-*                       description: Language code for this translation (English, Indonesian, Spanish)
-*                     title:
-*                       type: string
-*                       description: Translated title for the listing
-*                     description:
-*                       type: string
-*                       description: Translated description for the listing
  *             required:
- *               - location_id
- *               - listing_type_id
+ *               - title
+ *               - description
  *               - ownership_type_id
- *               - status_id
+ *               - listing_type_id
+ *               - location_id
+ *               - building_size_sqm
+ *               - land_size_sqm
+ *               - bedrooms
+ *               - bathrooms
  *               - price
+ *               - year_built
+ *               - status_id
+ *               - features
+ *               - images
  *               - translations
  *     responses:
  *       201:

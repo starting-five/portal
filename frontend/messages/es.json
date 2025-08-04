@@ -15,5 +15,65 @@
     "HomePage": {
         "description": "Esta es la página de inicio donde puedes encontrar las últimas actualizaciones y características.",
         "title": "Bienvenido a Nuestra Aplicación"
+    },
+    "ListingForm": {
+        "bathrooms_label": "Baños",
+        "bathrooms_placeholder": "ej. 2",
+        "bedrooms_label": "Habitaciones",
+        "bedrooms_placeholder": "ej. 3",
+        "building_size_label": "Superficie construida (m²)",
+        "building_size_placeholder": "ej. 120",
+        "cancel": "Cancelar",
+        "description_edit": "Edita la información de tu listado abajo",
+        "description_label": "Descripción *",
+        "description_new": "Completa los detalles a continuación para crear un nuevo listado de propiedad",
+        "description_placeholder": "Descripción corta",
+        "features_label": "Características",
+        "form_invalid": "Por favor corrige los errores destacados",
+        "land_size_label": "Superficie de terreno (m²)",
+        "land_size_placeholder": "ej. 300",
+        "listing_type_label": "Tipo de anuncio *",
+        "listing_type_placeholder": "Selecciona tipo de anuncio",
+        "location_label": "Ubicación *",
+        "location_placeholder": "Selecciona ubicación",
+        "ownership_type_label": "Tipo de propiedad *",
+        "ownership_type_placeholder": "Selecciona tipo de propiedad",
+        "price_label": "Precio *",
+        "price_placeholder": "ej. 250000",
+        "pricing_status_header": "Precio y estado",
+        "property_details": "Detalles de la propiedad",
+        "property_details_header": "Detalles de la propiedad",
+        "required_field": "Campo requerido",
+        "save": "Guardar",
+        "size_features_header": "Tamaño y características",
+        "status_label": "Estado *",
+        "status_placeholder": "Selecciona estado",
+        "title_edit": "Editar Listado",
+        "title_error_message": "Este campo es obligatorio en todos los idiomas",
+        "title_label": "Título *",
+        "title_new": "Agregar Nuevo Listado",
+        "title_placeholder": "Título de la propiedad",
+        "year_built_label": "Año de construcción",
+        "year_built_placeholder": "ej. 2015"
+    },
+    "LocaleSwitcher": {
+        "aria_label": "Cambiar idioma"
+    },
+    "metadata": {
+        "description": "Un portal para gestionar listados de propiedades",
+        "title": "Portal de Propiedades"
+    },
+    "MyListings": {
+        "add_listing": "Agregar Listado",
+        "description": "Ver y gestionar mis listados de propiedades",
+        "error": "Error al cargar los listados. Por favor, inténtalo de nuevo más tarde.",
+        "title": "Mis Listados"
+    },
+    "Sidebar": {
+        "home": "Inicio",
+        "my_listings": "Mis Listados",
+        "new_listing": "Nuevo Listado",
+        "profile": "Perfil",
+        "settings": "Configuraciones"
     }
 }

@@ -25,15 +25,11 @@
  *                     type: string
  *                   sort_order:
  *                     type: integer
- *                   translations:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         language_code:
- *                           type: string
- *                         name:
- *                           type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     description: Object mapping language codes to translated category names
  */
 const express = require('express');
 const router = express.Router();

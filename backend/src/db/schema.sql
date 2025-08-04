@@ -1,3 +1,21 @@
+-- DANGER: Drop all tables, functions, and triggers in the public schema (for dev reset only)
+DO $$ DECLARE
+    r RECORD;
+BEGIN
+    -- Drop all tables
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+        EXECUTE 'DROP TABLE IF EXISTS public.' || quote_ident(r.tablename) || ' CASCADE;';
+    END LOOP;
+    -- Drop all sequences
+    FOR r IN (SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public') LOOP
+        EXECUTE 'DROP SEQUENCE IF EXISTS public.' || quote_ident(r.sequence_name) || ' CASCADE;';
+    END LOOP;
+    -- Drop all functions
+    FOR r IN (SELECT routine_name, routine_type FROM information_schema.routines WHERE specific_schema = 'public') LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS public.' || quote_ident(r.routine_name) || ' CASCADE;';
+    END LOOP;
+END $$;
+
 -- 1. Create a function to generate a unique, human-readable listing ID.
 -- This function ensures the generated ID does not already exist.
 CREATE OR REPLACE FUNCTION generate_unique_listing_id()
@@ -18,15 +36,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DO $$ BEGIN
-    CREATE TYPE feature_category AS ENUM ('scenic', 'property', 'amenity');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
--- Removed price_units table
 CREATE TABLE IF NOT EXISTS listing_types (
-  id SERIAL PRIMARY KEY
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(50) UNIQUE NOT NULL,
+  sort_order INTEGER
 );
 
 -- Multilingual translations for listing types
@@ -41,7 +54,9 @@ CREATE TABLE IF NOT EXISTS listing_type_translations (
 );
 
 CREATE TABLE IF NOT EXISTS ownership_types (
-  id SERIAL PRIMARY KEY
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(50) UNIQUE NOT NULL,
+  sort_order INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS ownership_type_translations (
@@ -55,10 +70,10 @@ CREATE TABLE IF NOT EXISTS ownership_type_translations (
 );
 
 
-
 CREATE TABLE IF NOT EXISTS listing_statuses (
   id SERIAL PRIMARY KEY,
-  key VARCHAR(50) UNIQUE NOT NULL
+  key VARCHAR(50) UNIQUE NOT NULL,
+  sort_order INTEGER
 );
 
 -- Multilingual translations for listing statuses
@@ -75,7 +90,8 @@ CREATE TABLE IF NOT EXISTS listing_statuses_translations (
 -- 3. Create the 'locations' table (no change)
 CREATE TABLE IF NOT EXISTS locations (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100) UNIQUE NOT NULL
+  name VARCHAR(100) UNIQUE NOT NULL,
+  sort_order INT DEFAULT 0
 );
 
 -- 4. Create the 'listings' table
@@ -90,9 +106,7 @@ CREATE TABLE IF NOT EXISTS listings (
   land_size_sqm INT DEFAULT 0,
   building_size_sqm INT,
   status_id INT REFERENCES listing_statuses(id),
-  -- price_unit_id INT, -- removed price_units support
   price NUMERIC(18, 2),
-  -- currency_id INT, -- removed currencies support
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   year_built INT,
@@ -211,6 +225,4 @@ CREATE INDEX IF NOT EXISTS listings_location_id_idx ON listings(location_id);
 CREATE INDEX IF NOT EXISTS listings_listing_type_id_idx ON listings(listing_type_id);
 CREATE INDEX IF NOT EXISTS listings_ownership_type_id_idx ON listings(ownership_type_id);
 CREATE INDEX IF NOT EXISTS listings_status_id_idx ON listings(status_id);
--- CREATE INDEX IF NOT EXISTS listings_price_unit_id_idx ON listings(price_unit_id); -- removed price_units support
--- CREATE INDEX IF NOT EXISTS listings_currency_id_idx ON listings(currency_id); -- removed currencies support
 CREATE INDEX IF NOT EXISTS listings_price_idx ON listings(price);

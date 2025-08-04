@@ -6,7 +6,16 @@ const ListingType = require('../models/listing_type.model');
 const getAllListingTypes = async (req, res) => {
   try {
     const types = await ListingType.findAll();
-    res.status(200).json(types);
+    // Ensure the response matches the expected format
+    const mapped = types.map(t => ({
+      id: t.id,
+      key: t.key,
+      // If your DB does not have these columns, set to null for compatibility
+      category_key: t.category_key || null,
+      sort_order: t.sort_order || null,
+      labels: t.labels || {}
+    }));
+    res.status(200).json(mapped);
   } catch (error) {
     console.error('Error fetching listing types:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching listing types.' });
@@ -19,12 +28,18 @@ const getAllListingTypes = async (req, res) => {
 const getListingTypeById = async (req, res) => {
   try {
     const { id } = req.params;
-    const lang = req.query.lang || 'en';
-    const type = await ListingType.findById(id, lang);
+    const type = await ListingType.findById(id);
     if (!type) {
       return res.status(404).json({ message: 'Listing type not found' });
     }
-    res.status(200).json(type);
+    const mapped = {
+      id: type.id,
+      key: type.key,
+      category_key: type.category_key || null,
+      sort_order: type.sort_order || null,
+      labels: type.labels || {}
+    };
+    res.status(200).json(mapped);
   } catch (error) {
     console.error('Error fetching listing type by ID:', error.stack);
     res.status(500).json({ message: 'An error occurred while fetching the listing type.' });
@@ -36,7 +51,14 @@ const getListingTypeById = async (req, res) => {
  */
 const createListingType = async (req, res) => {
   try {
-    const newType = await ListingType.create(req.body);
+    const { key, translations } = req.body;
+    if (!key || typeof key !== 'string' || !key.trim()) {
+      return res.status(400).json({ message: 'Key is required and must be a non-empty string.' });
+    }
+    if (!Array.isArray(translations) || translations.length === 0) {
+      return res.status(400).json({ message: 'Translations array required.' });
+    }
+    const newType = await ListingType.create({ key, translations });
     res.status(201).json(newType);
   } catch (error) {
     console.error('Error creating listing type:', error.stack);

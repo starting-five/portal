@@ -1,13 +1,9 @@
-export type Currency = {
-  id: number;
-  code: string;
-  name: string;
-};
 
 export type Feature = {
   id: number;
-  name: string;
-  category: string;
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
 };
 
 export type ListingImage = {
@@ -16,33 +12,26 @@ export type ListingImage = {
   url: string;
 };
 
-export type ListingStatus = {
-  id: number;
-  name: string;
-};
-
 export type ListingType = {
   id: number;
-  name: string;
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
 };
 
 export type Location = {
   id: number;
   name: string;
+  sort_order: number;
 };
 
 export type OwnershipType = {
   id: number;
-  name: string;
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
 };
 
-export type PriceUnit = {
-  id: number;
-  name: string;
-};
-
-// A more generic type for listings on the list page,
-// as the ListingCard is designed to display any property.
 export type Listing = {
   id: number;
   listing_id: number;
@@ -52,19 +41,16 @@ export type Listing = {
 export type ListingFormState = {
   title: string;
   description: string;
-  listing_type_id: number | null;
-  ownership_type_id: number | null;
-  location_id: number | null;
-  bedrooms: number | string;
-  bathrooms: number | string;
-  land_size_sqm: number | string;
-  building_size_sqm: number | string;
-  status_id: number | null;
-  price: number | string;
-  currency_id: number | null;
-  price_unit_id: number | null;
-  year_built: number | string;
-  facilities: string;
+  listing_type_id: number;
+  ownership_type_id: number;
+  location_id: number;
+  bedrooms: number;
+  bathrooms: number;
+  land_size_sqm: number;
+  building_size_sqm: number;
+  status_id: number;
+  price: number;
+  year_built: number;
   features: number[];
 };
 
@@ -72,4 +58,33 @@ export type DropdownOption = {
   id: number;
   name?: string;
   code?: string;
+};
+
+export type ListingStatus = {
+  id: number;
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
+};
+
+export type FeatureItem = {
+  id: number;
+  key: string;
+  category_key: string;
+  sort_order: number;
+  labels: Record<string, string>;
+};
+
+export type FeatureCategoryWithItems = {
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
+  items: FeatureItem[];
+};
+
+export type FeatureCategory = {
+  id: number;
+  key: string;
+  sort_order: number;
+  labels: Record<string, string>;
 };

@@ -73,3 +73,10 @@ Access the app:
 Frontend: http://localhost:3000
 Backend API/Swagger: http://localhost:3001/api-docs
 
+
+Running on EC2:
+
+To create network so that frontend knows the backend within the same instance:
+docker network create portal-network
+docker run -d --name backend --network portal-network <backend-image>
+docker run -d --name frontend --network portal-network -p 3000:3000 <frontend-image>

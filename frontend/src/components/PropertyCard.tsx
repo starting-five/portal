@@ -1,39 +1,60 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import {
-    ArrowLeft,
-    ArrowRight,
-    Bath,
-    Bed,
-    Dumbbell,
-    LayoutGrid,
-    MapPin,
-    Maximize,
-    Mountain,
-    Sparkles,
-    Square,
-    Sunrise,
-    Trees,
-    Waves,
-    Pencil,
-    Trash2,
+  ArrowLeft,
+  ArrowRight,
+  Bath,
+  Bed,
+  Calendar,
+  Crop,
+  Hash,
+  LayoutGrid,
+  MapPin,
+  Pencil,
+  Square,
+  Sunrise,
+  Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import React from "react";
 import Link from "next/link";
+import React from "react";
+
+import { deleteListing } from "@/lib/api/listings";
+import { toast } from "sonner";
+
+import {
+  useFeatureLabel,
+  useListingStatusLabel,
+  useListingTypeLabel,
+  useLocationLabel,
+  useOwnershipLabel,
+} from "@/hooks/useLookupLabels";
+import { useRouter } from "next/navigation";
 
 export type Property = {
   id: number;
+  listing_id: string;
   title: string;
-  location: string;
+  location_id: number;
   price: string;
   images: string[];
-  type: string;
-  ownership: string;
-  status: string[];
+  listing_type_id: number;
+  ownership_type_id: number;
+  status_id: number;
   bedrooms?: number | null;
   bathrooms?: number | null;
   building_size_sqm?: number | null;
@@ -41,72 +62,144 @@ export type Property = {
   year_built?: number | null;
   handover?: string | null;
   price_per_sqm?: string | null;
-  features?: string[];
+  features?: number[];
   description?: string;
 };
 
-function getFeatureIcon(feature: string) {
-    console.log("Feature:", feature);
-  switch (feature.name.toLowerCase()) {
-    case "pool":
-    case "ocean view":
-    case "beachfront":
-      return <Waves className="h-3 w-3" />;
-    case "sunset view":
-      return <Sunrise className="h-3 w-3" />;
-    case "gym":
-      return <Dumbbell className="h-3 w-3" />;
-    case "spa":
-    case "resort":
-      return <Sparkles className="h-3 w-3" />;
-    case "garden":
-      return <Trees className="h-3 w-3" />;
-    case "rice view":
-    case "cliff top":
-    case "quiet":
-      return <Mountain className="h-3 w-3" />;
-    case "golf view":
-      return <MapPin className="h-3 w-3" />;
-    default:
-      return <MapPin className="h-3 w-3" />;
+export default function PropertyCard({
+  property,
+  locale,
+}: {
+  property: Property;
+  locale?: string;
+}) {
+  const router = useRouter();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [isFading, setIsFading] = React.useState(false);
+  async function handleDelete() {
+    try {
+      setIsFading(true);
+      await deleteListing(property.listing_id);
+      setDialogOpen(false);
+      toast.success("Listing deleted successfully!");
+    } catch (error: any) {
+      setIsFading(false);
+      toast.error(error?.message || "Failed to delete listing");
+    }
   }
-}
 
-export default function PropertyCard({ property, locale }: { property: Property; locale?: string }) {
+  React.useEffect(() => {
+    if (isFading) {
+      const timeout = setTimeout(() => {
+        router.refresh();
+      }, 600); // match fade duration
+      return () => clearTimeout(timeout);
+    }
+  }, [isFading, router]);
+
   const t = useTranslations("Features");
   const [currentSlide, setCurrentSlide] = React.useState(0);
-  const [sliderRef, instanceRef] = useKeenSlider({
-    initial: 0,
-    slideChanged(slider) {
-      setCurrentSlide(slider.track.details.rel);
-    },
-    loop: true,
-  });
+  // Memoize keen-slider options to prevent remounts on resize
+  const sliderOptions = React.useMemo(
+    () => ({
+      initial: 0,
+      slideChanged(slider: any) {
+        setCurrentSlide(slider.track.details.rel);
+      },
+      loop: true,
+    }),
+    []
+  );
+  const [sliderRef, instanceRef] = useKeenSlider(sliderOptions);
+
+  // Only show keen-slider arrows on hover for desktop, always show for touch devices
+  const isTouchDevice =
+    typeof window !== "undefined" &&
+    ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
+  // Lookup labels using custom hooks
+  // These hooks will fetch the necessary data from Redux store and return the localized label
+  // This avoids the need to pass ownershipTypes, listingTypes, etc. as props
+  // This is more efficient and keeps the component cleaner
+
+  const ownershipLabel = useOwnershipLabel(
+    property.ownership_type_id,
+    locale || "en"
+  );
+
+  const listingTypeLabel = useListingTypeLabel(
+    property.listing_type_id,
+    locale || "en"
+  );
+
+  const listingStatusLabel = useListingStatusLabel(
+    property.status_id,
+    locale || "en"
+  );
+
+  const location = useLocationLabel(property.location_id);
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full mx-auto">
+    <div
+      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full mx-auto flex flex-col"
+      style={{
+        pointerEvents: isFading ? "none" : undefined,
+        opacity: isFading ? 0 : 1,
+        transition: "opacity 600ms",
+      }}
+    >
       {/* Edit and Delete buttons top-right */}
       <div className="absolute top-3 right-3 z-20 flex gap-2">
         <Link
-          href={`/${locale || ''}/dashboard/listings/${property.id}/edit`}
+          href={`/${locale || ""}/dashboard/listings/${
+            property.listing_id
+          }/edit`}
           className="rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
           title="Edit listing"
         >
           <Pencil className="h-3 w-3" />
         </Link>
-        <button
-          type="button"
-          className="rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
-          title="Delete listing"
-          onClick={() => {/* TODO: Add delete logic/confirmation */}}
-        >
-          <Trash2 className="h-3 w-3" />
-        </button>
+        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <AlertDialogTrigger asChild>
+            <button
+              type="button"
+              className="rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
+              title="Delete listing"
+              onClick={() => setDialogOpen(true)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Listing</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this listing? This action cannot
+                be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       {/* Grouped Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-          {property.ownership ? property.ownership : "Freehold"}
+          {ownershipLabel}
+        </span>
+        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
+          {listingTypeLabel}
+        </span>
+        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
+          {listingStatusLabel}
         </span>
       </div>
       {/* Property Image Carousel with fallback */}
@@ -119,25 +212,32 @@ export default function PropertyCard({ property, locale }: { property: Property;
         >
           {(property.images && property.images.length > 0
             ? property.images
-            : ["/window.svg"] // fallback image in public/
-          ).map((img, idx) => (
-            <div className="keen-slider__slide" key={idx}>
-              <Image
-                src={img}
-                alt={property.title}
-                width={800}
-                height={600}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/window.svg";
-                }}
-              />
-            </div>
-          ))}
+            : ["/window.svg"]
+          ) // fallback image in public/
+            .map((img, idx) => (
+              <div className="keen-slider__slide" key={idx}>
+                <Image
+                  src={img}
+                  alt={property.title || "Property image"}
+                  width={800}
+                  height={600}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/window.svg";
+                  }}
+                />
+              </div>
+            ))}
         </div>
         {/* Arrows */}
-        {(property.images && property.images.length > 1) && (
-          <div className="opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        {property.images && property.images.length > 1 && (
+          <div
+            className={
+              isTouchDevice
+                ? ""
+                : "opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            }
+          >
             <button
               className="absolute top-1/2 left-2 z-20 -translate-y-1/2 rounded-full bg-gray-900/60 p-1 text-white hover:bg-gray-900"
               onClick={() => instanceRef.current?.prev()}
@@ -157,91 +257,123 @@ export default function PropertyCard({ property, locale }: { property: Property;
         {/* Image count overlay */}
         <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-gray-900/80 px-2 py-1 text-xs text-white">
           <LayoutGrid className="h-3 w-3" />
-          {currentSlide + 1}/
-          {property.images && property.images.length > 0 ? property.images.length : 1}
+          {(() => {
+            const imageCount =
+              property.images && property.images.length > 0
+                ? property.images.length
+                : 1;
+            // keen-slider rel index can exceed imageCount in loop mode, so use modulo
+            return `${(currentSlide % imageCount) + 1}/${imageCount}`;
+          })()}
         </span>
       </div>
       {/* Property Details */}
-      <div className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {property.title}
-            </h3>
-            <span className="mt-1 inline-flex items-center gap-1 text-sm text-gray-600">
+      <div className="p-6 flex flex-col flex-1 justify-between">
+        <div>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {property.title}
+              </h3>
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-1">
+            <span className="inline-flex items-center gap-1 text-sm text-gray-600">
               <MapPin className="h-4 w-4 text-gray-400" />
-              {property.location}
+              {location}
             </span>
+            {property.listing_id && (
+              <span className="inline-flex items-center gap-0 text-sm text-gray-600 ml-2">
+                <Hash className="h-4 w-4 text-gray-400" />
+                {property.listing_id}
+              </span>
+            )}
+          </div>
+          {/* Icon-based Property Stats */}
+          <div className="mt-4 flex items-center space-x-4 min-h-[32px]">
+            {property.bedrooms != null && property.bedrooms !== 0 && (
+              <div className="flex items-center space-x-1">
+                <Bed className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.bedrooms}
+                </span>
+              </div>
+            )}
+            {property.bathrooms != null && property.bathrooms !== 0 && (
+              <div className="flex items-center space-x-1">
+                <Bath className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.bathrooms}
+                </span>
+              </div>
+            )}
+            {property.building_size_sqm != null && (
+              <div className="flex items-center space-x-1">
+                <Square className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.building_size_sqm} m²
+                </span>
+              </div>
+            )}
+            {property.land_size_sqm != null && (
+              <div className="flex items-center space-x-1">
+                <Crop className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.land_size_sqm} m²
+                </span>
+              </div>
+            )}
+            {property.year_built != null && (
+              <div className="flex items-center space-x-1">
+                <Calendar className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.year_built}
+                </span>
+              </div>
+            )}
+            {property.handover && (
+              <div className="flex items-center space-x-1">
+                <Sunrise className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.handover}
+                </span>
+              </div>
+            )}
+            {property.price_per_sqm && (
+              <div className="flex items-center space-x-1">
+                <Square className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {property.price_per_sqm}
+                </span>
+              </div>
+            )}
+          </div>
+          {/* Features */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {property.features &&
+              property.features.map((featureId) => (
+                <span
+                  key={featureId}
+                  className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
+                >
+                  {useFeatureLabel(featureId, locale || "en")}
+                </span>
+              ))}
           </div>
         </div>
-        {/* Icon-based Property Stats */}
-        <div className="mt-4 flex items-center space-x-4">
-          {property.bedrooms != null && (
-            <div className="flex items-center space-x-1">
-              <Bed className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.bedrooms}</span>
-            </div>
-          )}
-          {property.bathrooms != null && (
-            <div className="flex items-center space-x-1">
-              <Bath className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.bathrooms}</span>
-            </div>
-          )}
-          {property.building_size_sqm != null && (
-            <div className="flex items-center space-x-1">
-              <Square className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.building_size_sqm} m²</span>
-            </div>
-          )}
-          {property.land_size_sqm != null && (
-            <div className="flex items-center space-x-1">
-              <Maximize className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.land_size_sqm} m²</span>
-            </div>
-          )}
-          {property.year_built != null && (
-            <div className="flex items-center space-x-1">
-              <Sparkles className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.year_built}</span>
-            </div>
-          )}
-          {property.handover && (
-            <div className="flex items-center space-x-1">
-              <Sunrise className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.handover}</span>
-            </div>
-          )}
-          {property.price_per_sqm && (
-            <div className="flex items-center space-x-1">
-              <Square className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">{property.price_per_sqm}</span>
-            </div>
-          )}
+        {/* Price */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xl font-semibold text-gray-800">
+              {typeof property.price === "number" ||
+              !isNaN(Number(property.price))
+                ? `IDR ${new Intl.NumberFormat("id-ID", {
+                    maximumFractionDigits: 0,
+                  }).format(Number(property.price))}`
+                : property.price}
+            </p>
+          </div>
         </div>
-        {/* Features */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {property.features &&
-            property.features.map((feature, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
-              >
-                {getFeatureIcon(feature)}
-                {t(feature)}
-              </span>
-            ))}
-        </div>
-        {/* Price and year built */}
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-xl font-semibold text-gray-800">
-            {property.price}
-          </p>
-        </div>
-        {/* Description */}
-        {property.description && (
-          <p className="mt-2 text-sm text-gray-600 line-clamp-2">{property.description}</p>
-        )}
       </div>
     </div>
   );

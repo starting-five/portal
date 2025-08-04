@@ -23,15 +23,16 @@
  *                 properties:
  *                   id:
  *                     type: integer
- *                   translations:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         language_code:
- *                           type: string
- *                         name:
- *                           type: string
+ *                   key:
+ *                     type: string
+ *                   labels:
+ *                     type: object
+ *                     additionalProperties:
+ *                       type: string
+ *                     example:
+ *                       en: Villa
+ *                       id: Vila
+ *                       es: Villa
  */
 const express = require('express');
 const router = express.Router();
@@ -50,14 +51,7 @@ const listingTypeController = require('../controllers/listing_type.controller');
  *   get:
  *     summary: Retrieve a list of all listing types
  *     tags: [Listing Types]
- *     parameters:
- *       - in: query
- *         name: lang
- *         schema:
- *           type: string
- *           enum: [en, es, id]
- *         required: false
-*         description: "Language code for the listing type name (default: en, falls back to English if translation is missing)"
+ 
  *     responses:
  *       200:
  *         description: A list of listing types.
@@ -84,13 +78,6 @@ router.get('/', listingTypeController.getAllListingTypes);
  *           type: integer
  *         required: true
  *         description: Numeric ID of the listing type to retrieve
- *       - in: query
- *         name: lang
- *         schema:
- *           type: string
- *           enum: [en, es, id]
- *         required: false
-*         description: "Language code for the listing type name (default: en, falls back to English if translation is missing)"
  *     responses:
  *       200:
  *         description: A single listing type object.
@@ -117,18 +104,30 @@ router.get('/:id', listingTypeController.getListingTypeById);
 *           schema:
 *             type: object
 *             properties:
-*               translations:
-*                 type: array
-*                 items:
-*                   type: object
-*                   properties:
-*                     language_code:
-*                       type: string
-*                       enum: [en, es, id]
-*                       description: Language code for the translation
-*                     name:
-*                       type: string
-*                       description: The translated name for the listing type
+ *                   key:
+ *                     type: string
+ *                     description: Unique key for the listing type (e.g., 'villa')
+ *                   translations:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         language_code:
+ *                           type: string
+ *                           enum: [en, es, id]
+ *                           description: Language code for the translation
+ *                         name:
+ *                           type: string
+ *                           description: The translated name for the listing type
+ *           example:
+ *             key: villa
+ *             translations:
+ *               - language_code: en
+ *                 name: Villa
+ *               - language_code: id
+ *                 name: Vila
+ *               - language_code: es
+ *                 name: Villa
  *     responses:
  *       201:
  *         description: The created listing type.

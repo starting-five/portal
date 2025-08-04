@@ -1,5 +1,24 @@
-const { pool } = require('../db');
-
+/**
+ * Finds a single listing status by its ID and language (with fallback to English).
+ * @param {number} id The ID of the listing status to find.
+ * @param {string} lang The language code.
+ * @returns {Promise<Object|undefined>} A promise that resolves to the listing status object, or undefined if not found.
+ */
+const findById = async (id, lang = "en") => {
+  const { rows } = await pool.query(
+    `
+    SELECT ls.id, ls.key,
+           COALESCE(lst.name, lst_en.name) AS name
+    FROM listing_statuses ls
+    LEFT JOIN listing_statuses_translations lst ON ls.id = lst.listing_status_id AND lst.language_code = $2
+    LEFT JOIN listing_statuses_translations lst_en ON ls.id = lst_en.listing_status_id AND lst_en.language_code = 'en'
+    WHERE ls.id = $1;
+  `,
+    [id, lang]
+  );
+  return rows[0];
+};
+const { pool } = require("../db");
 
 /**
  * Finds all listing statuses with all translations.
@@ -25,9 +44,9 @@ const findAll = async () => {
 const create = async ({ key, translations }) => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     const statusRes = await client.query(
-      'INSERT INTO listing_statuses (key) VALUES ($1) RETURNING id, key',
+      "INSERT INTO listing_statuses (key) VALUES ($1) RETURNING id, key",
       [key]
     );
     const status = statusRes.rows[0];
@@ -39,18 +58,20 @@ const create = async ({ key, translations }) => {
     });
     if (values.length > 0) {
       await client.query(
-        `INSERT INTO listing_statuses_translations (listing_status_id, language_code, name) VALUES ${placeholders.join(", ")}`,
+        `INSERT INTO listing_statuses_translations (listing_status_id, language_code, name) VALUES ${placeholders.join(
+          ", "
+        )}`,
         values
       );
     }
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return {
       id: status.id,
       key: status.key,
       translations,
     };
   } catch (err) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     throw err;
   } finally {
     client.release();
@@ -66,17 +87,20 @@ const create = async ({ key, translations }) => {
 const update = async (id, { key, translations }) => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     const statusRes = await client.query(
-      'UPDATE listing_statuses SET key = $1 WHERE id = $2 RETURNING id, key',
+      "UPDATE listing_statuses SET key = $1 WHERE id = $2 RETURNING id, key",
       [key, id]
     );
     if (!statusRes.rows[0]) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       return undefined;
     }
     // Remove existing translations
-    await client.query('DELETE FROM listing_statuses_translations WHERE listing_status_id = $1', [id]);
+    await client.query(
+      "DELETE FROM listing_statuses_translations WHERE listing_status_id = $1",
+      [id]
+    );
     // Insert new translations
     const values = [];
     const placeholders = [];
@@ -86,18 +110,20 @@ const update = async (id, { key, translations }) => {
     });
     if (values.length > 0) {
       await client.query(
-        `INSERT INTO listing_statuses_translations (listing_status_id, language_code, name) VALUES ${placeholders.join(", ")}`,
+        `INSERT INTO listing_statuses_translations (listing_status_id, language_code, name) VALUES ${placeholders.join(
+          ", "
+        )}`,
         values
       );
     }
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return {
       id,
       key,
       translations,
     };
   } catch (err) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     throw err;
   } finally {
     client.release();
@@ -110,12 +136,16 @@ const update = async (id, { key, translations }) => {
  * @returns {Promise<number>} A promise that resolves to the number of deleted rows (1 or 0).
  */
 const remove = async (id) => {
-  const result = await pool.query('DELETE FROM listing_statuses WHERE id = $1', [id]);
+  const result = await pool.query(
+    "DELETE FROM listing_statuses WHERE id = $1",
+    [id]
+  );
   return result.rowCount;
 };
 
 module.exports = {
   findAll,
+  findById,
   create,
   update,
   remove,

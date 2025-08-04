@@ -7,7 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "db:setup": "node src/db/setup.js",
-    "db:seed": "node src/db/seed.js"
+    "db:seed": "node src/db/seed.js",
+    "db:insertTestData": "node src/db/insertTestListings.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
