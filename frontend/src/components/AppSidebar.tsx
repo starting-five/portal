@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, List, Search, Settings } from "lucide-react";
+import { Home, List } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -6,13 +6,14 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
+  SidebarMenuItem
+} from "@/components/ui/sidebar";
+
 import Link from "next/link";
+import { LogoutButton } from "./LogoutButton";
 import { Separator } from "./ui/separator";
 
 export function AppSidebar({ locale }: { locale: string }) {
@@ -44,27 +45,32 @@ export function AppSidebar({ locale }: { locale: string }) {
         </Link>
       </SidebarHeader>
       <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
+        orientation="vertical"
+        className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="flex flex-col h-full">
+        <div className="flex-1">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
+        <div className="mb-4 px-2">
+          <LogoutButton />
+        </div>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

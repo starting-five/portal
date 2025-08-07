@@ -1,4 +1,74 @@
 {
+    "AuthForm": {
+        "buttons": {
+            "login": "Iniciar sesión",
+            "loginLoading": "Iniciando sesión...",
+            "sendReset": "Enviar correo de restablecimiento",
+            "sendResetLoading": "Enviando...",
+            "signup": "Regístrate",
+            "signupLoading": "Creando una cuenta..."
+        },
+        "errors": {
+            "emailInvalid": "Correo electrónico no válido",
+            "emailRequired": "El correo electrónico es obligatorio",
+            "passwordRequired": "La contraseña es obligatoria",
+            "passwordsDoNotMatch": "Las contraseñas no coinciden",
+            "repeatPasswordRequired": "Repetir la contraseña es obligatorio",
+            "unknown": "Ocurrió un error"
+        },
+        "fields": {
+            "email": {
+                "label": "Correo electrónico",
+                "placeholder": "tú@ejemplo.com"
+            },
+            "password": {
+                "hide": "Ocultar contraseña",
+                "label": "Contraseña",
+                "show": "Mostrar contraseña"
+            },
+            "repeatPassword": {
+                "label": "Repite la contraseña"
+            }
+        },
+        "footer": {
+            "loginAction": "Iniciar sesión",
+            "loginPrompt": "¿Ya tienes una cuenta?",
+            "signupAction": "Regístrate",
+            "signupPrompt": "¿No tienes una cuenta?"
+        },
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "forgotPasswordPage": {
+            "description": "Escribe tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+            "successBody": "Si te registraste usando tu correo electrónico y contraseña, recibirás un correo para restablecer la contraseña.",
+            "successDescription": "Instrucciones para restablecer la contraseña enviadas",
+            "successTitle": "Revisa tu correo electrónico",
+            "title": "Restablece tu contraseña"
+        },
+        "login": {
+            "description": "Ingresa tu correo electrónico para iniciar sesión en tu cuenta",
+            "title": "Inicia sesión en tu cuenta"
+        },
+        "signup": {
+            "description": "Crea una nueva cuenta",
+            "title": "Regístrate"
+        },
+        "signupSuccessPage": {
+            "body": "Te has registrado exitosamente. Por favor, revisa tu correo electrónico para confirmar tu cuenta antes de iniciar sesión.",
+            "description": "Revisa tu correo electrónico para confirmar",
+            "title": "¡Gracias por registrarte!"
+        },
+        "updatePasswordPage": {
+            "button": "Guardar nueva contraseña",
+            "buttonLoading": "Guardando...",
+            "description": "Por favor, ingresa tu nueva contraseña abajo.",
+            "error": "Ocurrió un error al actualizar tu contraseña.",
+            "passwordLabel": "Nueva contraseña",
+            "passwordPlaceholder": "Nueva contraseña",
+            "successDescription": "Tu contraseña ha sido actualizada exitosamente.",
+            "successTitle": "Contraseña actualizada",
+            "title": "Establece una nueva contraseña"
+        }
+    },
     "Features": {
         "beachfront": "Frente a la playa",
         "cliff_top": "Acantilado",

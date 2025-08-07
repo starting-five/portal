@@ -1,5 +1,5 @@
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl";
 
 export default function Home() {
   const t = useTranslations();
@@ -15,6 +15,13 @@ export default function Home() {
           Go to Dashboard
         </button>
       </Link>
+      <div className="mt-4">
+        <Link href={`/${locale}/auth/login`}>
+          <button className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            Login
+          </button>
+        </Link>
+      </div>
     </main>
   );
 }

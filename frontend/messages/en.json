@@ -1,4 +1,74 @@
 {
+    "AuthForm": {
+        "buttons": {
+            "login": "Login",
+            "loginLoading": "Logging in...",
+            "sendReset": "Send reset email",
+            "sendResetLoading": "Sending...",
+            "signup": "Sign up",
+            "signupLoading": "Creating an account..."
+        },
+        "errors": {
+            "emailInvalid": "Invalid email address",
+            "emailRequired": "Email is required",
+            "passwordRequired": "Password is required",
+            "passwordsDoNotMatch": "Passwords do not match",
+            "repeatPasswordRequired": "Repeat password is required",
+            "unknown": "An error occurred"
+        },
+        "fields": {
+            "email": {
+                "label": "Email",
+                "placeholder": "example@email.com"
+            },
+            "password": {
+                "hide": "Hide password",
+                "label": "Password",
+                "show": "Show password"
+            },
+            "repeatPassword": {
+                "label": "Repeat Password"
+            }
+        },
+        "footer": {
+            "loginAction": "Login",
+            "loginPrompt": "Already have an account?",
+            "signupAction": "Sign up",
+            "signupPrompt": "Don't have an account?"
+        },
+        "forgotPassword": "Forgot your password?",
+        "forgotPasswordPage": {
+            "description": "Type in your email and we'll send you a link to reset your password.",
+            "successBody": "If you registered using your email and password, you will receive a password reset email.",
+            "successDescription": "Password reset instructions sent",
+            "successTitle": "Check Your Email",
+            "title": "Reset Your Password"
+        },
+        "login": {
+            "description": "Enter your email below to login to your account",
+            "title": "Login to your account"
+        },
+        "signup": {
+            "description": "Create a new account",
+            "title": "Sign up"
+        },
+        "signupSuccessPage": {
+            "body": "You've successfully signed up. Please check your email to confirm your account before signing in.",
+            "description": "Check your email to confirm",
+            "title": "Thank you for signing up!"
+        },
+        "updatePasswordPage": {
+            "button": "Save new password",
+            "buttonLoading": "Saving...",
+            "description": "Please enter your new password below.",
+            "error": "An error occurred while updating your password.",
+            "passwordLabel": "New password",
+            "passwordPlaceholder": "New password",
+            "successDescription": "Your password has been updated successfully.",
+            "successTitle": "Password Updated",
+            "title": "Set a New Password"
+        }
+    },
     "Features": {
         "beachfront": "Beachfront",
         "cliff_top": "Cliff Top",
