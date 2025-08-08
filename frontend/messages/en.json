@@ -102,10 +102,15 @@
         "form_invalid": "Please correct the highlighted errors",
         "land_size_label": "Land Size (sqm)",
         "land_size_placeholder": "e.g. 300",
+        "listing_create_failed": "Failed to create listing.",
+        "listing_created_success": "Listing created successfully!",
         "listing_type_label": "Listing Type *",
         "listing_type_placeholder": "Select listing type",
+        "listing_update_failed": "Failed to update listing.",
+        "listing_updated_success": "Listing updated successfully!",
         "location_label": "Location *",
         "location_placeholder": "Select location",
+        "non_negative_error": "Value must be zero or greater.",
         "ownership_type_label": "Ownership Type *",
         "ownership_type_placeholder": "Select ownership type",
         "price_label": "Price *",
@@ -115,6 +120,7 @@
         "property_details_header": "Property Details",
         "required_field": "Required field",
         "save": "Save",
+        "saving": "Saving...",
         "size_features_header": "Size & Features",
         "status_label": "Status *",
         "status_placeholder": "Select status",
@@ -136,8 +142,17 @@
     "MyListings": {
         "add_listing": "Add Listing",
         "description": "View and manage my property listings",
+        "empty_message": "You have no listings yet. Start by adding your first property!",
         "error": "Failed to load listings. Please try again later.",
         "title": "My Listings"
+    },
+    "PropertyCard": {
+        "delete_title": "Delete Listing",
+        "delete_confirm": "Are you sure you want to delete this listing? This action cannot be undone.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleted_success": "Listing deleted successfully!",
+        "delete_failed": "Failed to delete listing. Please try again."
     },
     "Sidebar": {
         "home": "Home",

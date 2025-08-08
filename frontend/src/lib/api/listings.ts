@@ -14,35 +14,42 @@ export async function getListing(listing_id: string) {
   return res.json();
 }
 
-export async function createListing(data: unknown) {
+export async function createListing(data: unknown, jwt?: string) {
   console.log("API_BASE (createListing):", API_BASE);
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (jwt) headers["Authorization"] = `Bearer ${jwt}`;
   const res = await fetch(`${API_BASE}/listings`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create listing");
   return res.json();
 }
 
-export async function updateListing(listing_id: string, data: unknown) {
+export async function updateListing(listing_id: string, data: unknown, jwt?: string) {
   console.log("API_BASE (updateListing):", API_BASE);
   console.log("Updating listing with ID:", listing_id);
   console.log("Data to update:", data);
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (jwt) headers["Authorization"] = `Bearer ${jwt}`;
   const res = await fetch(`${API_BASE}/listings/${listing_id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to update listing");
   return res.json();
 }
 
-export async function deleteListing(listing_id: string) {
+export async function deleteListing(listing_id: string, jwt?: string) {
   console.log("API_BASE (deleteListing):", API_BASE);
   console.log("Deleting listing with listing ID:", listing_id);
+  const headers: Record<string, string> = {};
+  if (jwt) headers["Authorization"] = `Bearer ${jwt}`;
   const res = await fetch(`${API_BASE}/listings/${listing_id}`, {
     method: "DELETE",
+    headers,
   });
   if (!res.ok) throw new Error("Failed to delete listing");
   if (res.status === 204) return;

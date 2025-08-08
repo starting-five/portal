@@ -31,9 +31,11 @@ import {
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 import { deleteListing } from "@/lib/api/listings";
+import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
 import { toast } from "sonner";
 
 import {
@@ -43,8 +45,8 @@ import {
   useLocationLabel,
   useOwnershipLabel,
 } from "@/hooks/useLookupLabels";
-import { useRouter } from "next/navigation";
 
+// Property type definition
 export type Property = {
   id: number;
   listing_id: string;
@@ -55,6 +57,7 @@ export type Property = {
   listing_type_id: number;
   ownership_type_id: number;
   status_id: number;
+  user_id?: string;
   bedrooms?: number | null;
   bathrooms?: number | null;
   building_size_sqm?: number | null;
@@ -66,25 +69,48 @@ export type Property = {
   description?: string;
 };
 
-export default function PropertyCard({
-  property,
-  locale,
-}: {
+interface PropertyCardProps {
   property: Property;
   locale?: string;
-}) {
+}
+
+export default function PropertyCard({ property, locale }: PropertyCardProps) {
+  const tCard = useTranslations("PropertyCard");
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isFading, setIsFading] = React.useState(false);
+  const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+
+  // Get current user ID on mount for UI display logic only
+  React.useEffect(() => {
+    const getCurrentUserId = async () => {
+      try {
+        const jwt = await getCurrentUserJWT();
+        if (jwt) {
+          const payload = JSON.parse(atob(jwt.split(".")[1]));
+          setCurrentUserId(payload.sub);
+        }
+      } catch (error) {
+        // Silently fail - not critical for functionality
+      }
+    };
+    getCurrentUserId();
+  }, []);
+
+  // Simple UI logic: show buttons if user IDs match (backend handles real security)
+  const canShowEditDelete = currentUserId && property.user_id === currentUserId;
+
   async function handleDelete() {
     try {
       setIsFading(true);
-      await deleteListing(property.listing_id);
+      // Get JWT for authentication
+      const jwt = await getCurrentUserJWT();
+      await deleteListing(property.listing_id, jwt || undefined);
       setDialogOpen(false);
-      toast.success("Listing deleted successfully!");
+      toast.success(tCard("deleted_success"));
     } catch (error: any) {
       setIsFading(false);
-      toast.error(error?.message || "Failed to delete listing");
+      toast.error(error?.message || tCard("delete_failed"));
     }
   }
 
@@ -148,48 +174,49 @@ export default function PropertyCard({
         transition: "opacity 600ms",
       }}
     >
-      {/* Edit and Delete buttons top-right */}
-      <div className="absolute top-3 right-3 z-20 flex gap-2">
-        <Link
-          href={`/${locale || ""}/dashboard/listings/${
-            property.listing_id
-          }/edit`}
-          className="rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
-          title="Edit listing"
-        >
-          <Pencil className="h-3 w-3" />
-        </Link>
-        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <AlertDialogTrigger asChild>
-            <button
-              type="button"
-              className="rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
-              title="Delete listing"
-              onClick={() => setDialogOpen(true)}
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Listing</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this listing? This action cannot
-                be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
+      {/* Edit and Delete buttons top-right - only show if user owns the listing */}
+      {canShowEditDelete && (
+        <div className="absolute top-3 right-3 z-20 flex gap-2">
+          <Link
+            href={`/${locale || ""}/dashboard/listings/${
+              property.listing_id
+            }/edit`}
+            className="rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
+            title="Edit listing"
+          >
+            <Pencil className="h-3 w-3" />
+          </Link>
+          <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                className="rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
+                title={tCard("delete_title")}
+                onClick={() => setDialogOpen(true)}
               >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{tCard("delete_title")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {tCard("delete_confirm")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{tCard("cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {tCard("delete")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
       {/* Grouped Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
@@ -204,31 +231,51 @@ export default function PropertyCard({
       </div>
       {/* Property Image Carousel with fallback */}
       <div className="relative aspect-[3/2] w-full overflow-hidden bg-gray-200">
-        <div
-          ref={sliderRef}
-          className="keen-slider h-full w-full"
-          tabIndex={0}
-          aria-label="Property images carousel"
-        >
-          {(property.images && property.images.length > 0
-            ? property.images
-            : ["/window.svg"]
-          ) // fallback image in public/
-            .map((img, idx) => (
-              <div className="keen-slider__slide" key={idx}>
+        {property.images && property.images.length > 1 ? (
+          <div
+            ref={sliderRef}
+            className="keen-slider h-full w-full"
+            tabIndex={0}
+            aria-label="Property images carousel"
+          >
+            {property.images.map((img, idx) => (
+              <div
+                className="keen-slider__slide h-full w-full flex items-center justify-center bg-gray-200"
+                key={idx}
+              >
                 <Image
                   src={img}
                   alt={property.title || "Property image"}
-                  width={800}
+                  width={900}
                   height={600}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="max-h-full max-w-full object-contain mx-auto my-auto transition-transform duration-300 group-hover:scale-105"
+                  style={{ aspectRatio: "3/2", display: "block" }}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/window.svg";
                   }}
                 />
               </div>
             ))}
-        </div>
+          </div>
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-gray-200">
+            <Image
+              src={
+                property.images && property.images.length === 1
+                  ? property.images[0]
+                  : "/window.svg"
+              }
+              alt={property.title || "Property image"}
+              width={900}
+              height={600}
+              className="max-h-full max-w-full object-contain mx-auto my-auto"
+              style={{ aspectRatio: "3/2", display: "block" }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/window.svg";
+              }}
+            />
+          </div>
+        )}
         {/* Arrows */}
         {property.images && property.images.length > 1 && (
           <div
@@ -255,17 +302,15 @@ export default function PropertyCard({
           </div>
         )}
         {/* Image count overlay */}
-        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-gray-900/80 px-2 py-1 text-xs text-white">
-          <LayoutGrid className="h-3 w-3" />
-          {(() => {
-            const imageCount =
-              property.images && property.images.length > 0
-                ? property.images.length
-                : 1;
-            // keen-slider rel index can exceed imageCount in loop mode, so use modulo
-            return `${(currentSlide % imageCount) + 1}/${imageCount}`;
-          })()}
-        </span>
+        {property.images && property.images.length > 1 && (
+          <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-gray-900/80 px-2 py-1 text-xs text-white">
+            <LayoutGrid className="h-3 w-3" />
+            {(() => {
+              const imageCount = property.images.length;
+              return `${(currentSlide % imageCount) + 1}/${imageCount}`;
+            })()}
+          </span>
+        )}
       </div>
       {/* Property Details */}
       <div className="p-6 flex flex-col flex-1 justify-between">

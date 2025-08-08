@@ -46,47 +46,95 @@ export default async function Page({
   }
 
   // Render page content directly, providers are set up at a higher level
+  const hasListings = listings.length > 0;
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold leading-tight">{t("title")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {t("description")}
-            </p>
+    <div className="p-8 min-h-[70vh] flex flex-col">
+      {hasListings ? (
+        <>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold leading-tight">{t("title")}</h1>
+                <p className="text-muted-foreground text-sm mt-1">
+                  {t("description")}
+                </p>
+              </div>
+            </div>
+            <Link href={`/${locale}/dashboard/listings/new`}>
+              <Button
+                size="lg"
+                variant="blue"
+                className="px-5 py-2 rounded-lg flex items-center gap-2 text-base"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                {t("add_listing")}
+              </Button>
+            </Link>
           </div>
-        </div>
-        <Link href={`/${locale}/dashboard/listings/new`}>
-          <Button
-            size="lg"
-            variant="blue"
-            className="px-5 py-2 rounded-lg flex items-center gap-2 text-base"
+          <div
+            className={`grid gap-6 mx-auto
+              ${listings.length === 1 ? 'max-w-xl grid-cols-1' : ''}
+              ${listings.length === 2 ? 'max-w-4xl grid-cols-1 md:grid-cols-2' : ''}
+              ${listings.length >= 3 ? 'w-full [grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]' : ''}
+            `}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
+            {listings.map((listing: any) => (
+              <PropertyCard key={listing.id} property={listing} locale={locale} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <div className="mb-8">
+            {/* Illustration: simple house SVG */}
+            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="20" y="60" width="80" height="40" rx="8" fill="#F3F4F6" />
+              <path d="M60 30L25 60H35V95H85V60H95L60 30Z" fill="#E0E7FF" stroke="#6366F1" strokeWidth="2" />
+              <rect x="50" y="80" width="20" height="20" rx="3" fill="#6366F1" />
             </svg>
-            {t("add_listing")}
-          </Button>
-        </Link>
-      </div>
-
-      <div className="grid gap-6 w-full mx-auto [grid-template-columns:repeat(auto-fit,minmax(350px,1fr))]">
-        {listings.map((listing: any) => (
-          <PropertyCard key={listing.id} property={listing} locale={locale} />
-        ))}
-      </div>
+          </div>
+          <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+          <p className="text-muted-foreground text-base mb-6 max-w-md">
+            {t("empty_message", { defaultValue: "You have no listings yet. Start by adding your first property!" })}
+          </p>
+          <Link href={`/${locale}/dashboard/listings/new`}>
+            <Button
+              size="lg"
+              variant="blue"
+              className="px-6 py-3 rounded-lg flex items-center gap-2 text-base shadow-lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              {t("add_listing")}
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

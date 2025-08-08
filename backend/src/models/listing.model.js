@@ -31,6 +31,7 @@ const findByPublicId = async (id) => {
     SELECT
       l.id,
       l.listing_id,
+      l.user_id,
       l.listing_type_id,
       l.ownership_type_id,
       l.location_id,

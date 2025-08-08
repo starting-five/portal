@@ -25,6 +25,7 @@ interface ListingFeaturesProps {
   selected: number[];
   onChange: (selected: number[]) => void;
   locale: string;
+  disabled?: boolean;
 }
 
 export default function ListingFeatures({
@@ -32,6 +33,7 @@ export default function ListingFeatures({
   selected,
   onChange,
   locale,
+  disabled = false,
 }: ListingFeaturesProps) {
   function handleToggle(id: number) {
     if (selected.includes(id)) {
@@ -60,6 +62,7 @@ export default function ListingFeatures({
                         checked={selected.includes(feature.id)}
                         onCheckedChange={() => handleToggle(feature.id)}
                         id={`feature-${feature.id}`}
+                        disabled={disabled}
                       />
                     </FormControl>
                     <FormLabel
