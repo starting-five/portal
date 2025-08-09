@@ -1,4 +1,74 @@
 {
+    "AuthForm": {
+        "buttons": {
+            "login": "Masuk",
+            "loginLoading": "Sedang masuk...",
+            "sendReset": "Kirim email reset",
+            "sendResetLoading": "Mengirim...",
+            "signup": "Daftar",
+            "signupLoading": "Membuat akun..."
+        },
+        "errors": {
+            "emailInvalid": "Alamat email tidak valid",
+            "emailRequired": "Email wajib diisi",
+            "passwordRequired": "Kata sandi wajib diisi",
+            "passwordsDoNotMatch": "Kata sandi tidak cocok",
+            "repeatPasswordRequired": "Ulangi kata sandi wajib diisi",
+            "unknown": "Terjadi kesalahan"
+        },
+        "fields": {
+            "email": {
+                "label": "Email",
+                "placeholder": "anda@contoh.com"
+            },
+            "password": {
+                "hide": "Sembunyikan kata sandi",
+                "label": "Kata sandi",
+                "show": "Tampilkan kata sandi"
+            },
+            "repeatPassword": {
+                "label": "Ulangi Kata Sandi"
+            }
+        },
+        "footer": {
+            "loginAction": "Masuk",
+            "loginPrompt": "Sudah punya akun?",
+            "signupAction": "Daftar",
+            "signupPrompt": "Belum punya akun?"
+        },
+        "forgotPassword": "Lupa kata sandi?",
+        "forgotPasswordPage": {
+            "description": "Masukkan email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda.",
+            "successBody": "Jika Anda mendaftar menggunakan email dan kata sandi, Anda akan menerima email untuk mengatur ulang kata sandi.",
+            "successDescription": "Instruksi pengaturan ulang kata sandi telah dikirim",
+            "successTitle": "Periksa Email Anda",
+            "title": "Atur Ulang Kata Sandi Anda"
+        },
+        "login": {
+            "description": "Masukkan email Anda di bawah untuk masuk ke akun Anda",
+            "title": "Masuk ke akun Anda"
+        },
+        "signup": {
+            "description": "Buat akun baru",
+            "title": "Daftar"
+        },
+        "signupSuccessPage": {
+            "body": "Anda berhasil mendaftar. Silakan periksa email Anda untuk mengonfirmasi akun sebelum masuk.",
+            "description": "Periksa email Anda untuk konfirmasi",
+            "title": "Terima kasih telah mendaftar!"
+        },
+        "updatePasswordPage": {
+            "button": "Simpan kata sandi baru",
+            "buttonLoading": "Menyimpan...",
+            "description": "Silakan masukkan kata sandi baru Anda di bawah ini.",
+            "error": "Terjadi kesalahan saat memperbarui kata sandi Anda.",
+            "passwordLabel": "Kata sandi baru",
+            "passwordPlaceholder": "Kata sandi baru",
+            "successDescription": "Kata sandi Anda berhasil diperbarui.",
+            "successTitle": "Kata Sandi Diperbarui",
+            "title": "Buat Kata Sandi Baru"
+        }
+    },
     "Features": {
         "beachfront": "Tepi Pantai",
         "cliff_top": "Tepi Tebing",

@@ -1,5 +1,12 @@
-export default async function DashboardHome({ params }: { params: Promise<{ locale: string }> }) {
+import { createClient } from "@/lib/supabase/server";
+
+export default async function DashboardHome({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
+
   return (
     <div>
       <h1>Welcome to your dashboard! (Locale: {locale})</h1>

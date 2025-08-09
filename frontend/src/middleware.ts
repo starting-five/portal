@@ -1,11 +1,32 @@
+import { updateSession } from "@/lib/supabase/middleware";
 import createMiddleware from "next-intl/middleware";
+import { type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
 
-export default createMiddleware(routing);
+export async function middleware(request: NextRequest) {
+  console.log("Main middleware hit:", request.nextUrl.pathname);
+
+  // First, run Supabase session/auth logic
+  console.log("Running updateSession");
+  const authResponse = await updateSession(request);
+
+  // If auth redirected (user not authenticated), return that redirect
+  if (authResponse.status === 307 || authResponse.status === 302) {
+    console.log("Auth redirecting, returning auth redirect");
+    return authResponse;
+  }
+
+  // Then, run next-intl locale routing
+  const intlResponse = createMiddleware(routing)(request);
+  if (intlResponse instanceof Response) {
+    console.log("Next-intl processing");
+    return intlResponse;
+  }
+
+  // Return the auth response (which should be NextResponse.next)
+  return authResponse;
+}
 
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
   matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
 };
