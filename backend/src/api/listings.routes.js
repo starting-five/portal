@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const listingsController = require('../controllers/listings.controller');
+const { requireUser } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -157,8 +158,8 @@ router.get('/:listing_id', listingsController.getListingById);
  *             schema:
  *               $ref: '#/components/schemas/Listing'
  */
-// POST /api/v1/listings - Create a new listing
-router.post('/', listingsController.createListing);
+// POST /api/v1/listings - Create a new listing (requires authentication)
+router.post('/', requireUser, listingsController.createListing);
 
 /**
  * @swagger
@@ -234,8 +235,8 @@ router.post('/', listingsController.createListing);
  *       404:
  *         description: Listing not found
  */
-// PUT /api/v1/listings/:listing_id - Update a listing
-router.put('/:listing_id', listingsController.updateListing);
+// PUT /api/v1/listings/:listing_id - Update a listing (requires authentication)
+router.put('/:listing_id', requireUser, listingsController.updateListing);
 
 /**
  * @swagger
@@ -256,7 +257,7 @@ router.put('/:listing_id', listingsController.updateListing);
  *       404:
  *         description: Listing not found
  */
-// DELETE /api/v1/listings/:listing_id - Delete a listing
-router.delete('/:listing_id', listingsController.deleteListing);
+// DELETE /api/v1/listings/:listing_id - Delete a listing (requires authentication)
+router.delete('/:listing_id', requireUser, listingsController.deleteListing);
 
 module.exports = router;

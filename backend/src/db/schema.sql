@@ -87,23 +87,40 @@ CREATE TABLE IF NOT EXISTS listing_statuses_translations (
   UNIQUE (listing_status_id, language_code)
 );
 
--- 3. Create the 'locations' table (no change)
+
+-- 3. Create the 'users' table to store agent/user info (must come before listings)
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY, -- Supabase Auth user UUID
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(100),
+  role VARCHAR(50) DEFAULT 'user',
+  phone VARCHAR(30),
+  avatar_url VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optional: Add an index for faster lookups by email
+CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
+
+-- 4. Create the 'locations' table (no change)
 CREATE TABLE IF NOT EXISTS locations (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) UNIQUE NOT NULL,
   sort_order INT DEFAULT 0
 );
 
--- 4. Create the 'listings' table
+-- 5. Create the 'listings' table
 CREATE TABLE IF NOT EXISTS listings (
   id SERIAL PRIMARY KEY,
   listing_id VARCHAR(9) UNIQUE NOT NULL DEFAULT generate_unique_listing_id(),
+  user_id UUID NOT NULL REFERENCES users(id), -- Agent/owner, required
   listing_type_id INT REFERENCES listing_types(id),
   ownership_type_id INT REFERENCES ownership_types(id),
   location_id INT REFERENCES locations(id),
-  bedrooms INT DEFAULT 0,
-  bathrooms INT DEFAULT 0,
-  land_size_sqm INT DEFAULT 0,
+  bedrooms INT,
+  bathrooms INT,
+  land_size_sqm INT,
   building_size_sqm INT,
   status_id INT REFERENCES listing_statuses(id),
   price NUMERIC(18, 2),
@@ -226,3 +243,22 @@ CREATE INDEX IF NOT EXISTS listings_listing_type_id_idx ON listings(listing_type
 CREATE INDEX IF NOT EXISTS listings_ownership_type_id_idx ON listings(ownership_type_id);
 CREATE INDEX IF NOT EXISTS listings_status_id_idx ON listings(status_id);
 CREATE INDEX IF NOT EXISTS listings_price_idx ON listings(price);
+
+-- Index for user_id to speed up agent/listing queries
+CREATE INDEX IF NOT EXISTS listings_user_id_idx ON listings(user_id);
+
+
+-- 12. Create the 'users' table to store agent/user info
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY, -- Supabase Auth user UUID
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(100),
+  role VARCHAR(50) DEFAULT 'user',
+  phone VARCHAR(30),
+  avatar_url VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optional: Add an index for faster lookups by email
+CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);

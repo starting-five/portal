@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createListing } from "@/lib/api/listings";
+import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
 import {
   selectFeatures,
   selectListingStatuses,
@@ -44,13 +45,13 @@ const formSchema = z.object({
   ownership_type_id: z.number({ required_error: "required_field" }),
   listing_type_id: z.number({ required_error: "required_field" }),
   location_id: z.number({ required_error: "required_field" }),
-  building_size_sqm: z.number().optional(),
-  land_size_sqm: z.number().optional(),
-  bedrooms: z.number().min(0).optional(),
-  bathrooms: z.number().min(0).optional(),
+  building_size_sqm: z.number().min(0, { message: "non_negative_error" }).optional().nullable(),
+  land_size_sqm: z.number().min(0, { message: "non_negative_error" }).optional().nullable(),
+  bedrooms: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
+  bathrooms: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
   features: z.array(z.number()).optional(),
-  price: z.number({ required_error: "required_field" }).min(0),
-  year_built: z.number().min(0).optional(),
+  price: z.number({ required_error: "required_field" }).min(0, { message: "non_negative_error" }),
+  year_built: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
   status_id: z.number({ required_error: "required_field" }),
 });
 
@@ -65,7 +66,7 @@ import { useLocale, useTranslations } from "next-intl";
 import React from "react";
 
 type ListingFormProps = {
-  children?: React.ReactNode;
+  children?: React.ReactNode | ((props: { isSubmitting: boolean }) => React.ReactNode);
   initialValues?: any;
   mode?: "create" | "edit";
 };
@@ -77,9 +78,15 @@ export default function ListingForm({
   initialValues,
   mode,
 }: ListingFormProps) {
+  // Track form rendering
+  // console.timeEnd('Form Render Time');
+  // console.log('📋 ListingForm component starting to render...', { mode, hasInitialValues: !!initialValues });
+  // console.time('Form Complete Render');
+  
   const router = useRouter();
   const t = useTranslations("ListingForm");
   const locale = useLocale();
+  const [isManuallyLoading, setIsManuallyLoading] = React.useState(false);
   const ownershipTypes =
     (useSelector(selectOwnershipTypes) as OwnershipType[]) || [];
   const listingTypes = (useSelector(selectListingTypes) as ListingType[]) || [];
@@ -98,6 +105,31 @@ export default function ListingForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialValues,
+      // Explicitly handle number fields to avoid 0 values for empty fields
+      building_size_sqm: 
+        initialValues?.building_size_sqm !== undefined && 
+        initialValues?.building_size_sqm !== null && 
+        initialValues?.building_size_sqm !== ""
+          ? Number(initialValues.building_size_sqm)
+          : undefined,
+      land_size_sqm:
+        initialValues?.land_size_sqm !== undefined && 
+        initialValues?.land_size_sqm !== null && 
+        initialValues?.land_size_sqm !== ""
+          ? Number(initialValues.land_size_sqm)
+          : undefined,
+      bedrooms:
+        initialValues?.bedrooms !== undefined && 
+        initialValues?.bedrooms !== null && 
+        initialValues?.bedrooms !== ""
+          ? Number(initialValues.bedrooms)
+          : undefined,
+      bathrooms:
+        initialValues?.bathrooms !== undefined && 
+        initialValues?.bathrooms !== null && 
+        initialValues?.bathrooms !== ""
+          ? Number(initialValues.bathrooms)
+          : undefined,
       price:
         initialValues?.price !== undefined && initialValues?.price !== null
           ? Number(initialValues.price)
@@ -109,24 +141,91 @@ export default function ListingForm({
     },
   });
 
+  // Reset form when initialValues changes (e.g., when data is loaded)
+  React.useEffect(() => {
+    if (initialValues) {
+      // console.log('🔄 Resetting form with new initialValues:', initialValues);
+      form.reset({
+        ...initialValues,
+        // Explicitly handle number fields to avoid 0 values for empty fields
+        building_size_sqm: 
+          initialValues?.building_size_sqm !== undefined && 
+          initialValues?.building_size_sqm !== null && 
+          initialValues?.building_size_sqm !== ""
+            ? Number(initialValues.building_size_sqm)
+            : undefined,
+        land_size_sqm:
+          initialValues?.land_size_sqm !== undefined && 
+          initialValues?.land_size_sqm !== null && 
+          initialValues?.land_size_sqm !== ""
+            ? Number(initialValues.land_size_sqm)
+            : undefined,
+        bedrooms:
+          initialValues?.bedrooms !== undefined && 
+          initialValues?.bedrooms !== null && 
+          initialValues?.bedrooms !== ""
+            ? Number(initialValues.bedrooms)
+            : undefined,
+        bathrooms:
+          initialValues?.bathrooms !== undefined && 
+          initialValues?.bathrooms !== null && 
+          initialValues?.bathrooms !== ""
+            ? Number(initialValues.bathrooms)
+            : undefined,
+        price:
+          initialValues?.price !== undefined && initialValues?.price !== null
+            ? Number(initialValues.price)
+            : undefined,
+        year_built:
+          initialValues?.year_built !== undefined && initialValues?.year_built !== null && initialValues?.year_built !== ""
+            ? Number(initialValues.year_built)
+            : undefined,
+      });
+    }
+  }, [initialValues, form]);
+
   async function handleSubmit(values: any) {
+    setIsManuallyLoading(true);
+
+    // Clean up optional number fields - convert empty/invalid values to undefined for optional fields
+    const cleanOptionalNumber = (value: any) => {
+      if (value === null || value === undefined || value === "" || value === 0 || isNaN(value)) {
+        return undefined;
+      }
+      return value;
+    };
+
+    const cleanedValues = {
+      ...values,
+      building_size_sqm: cleanOptionalNumber(values.building_size_sqm),
+      land_size_sqm: cleanOptionalNumber(values.land_size_sqm),
+      bedrooms: cleanOptionalNumber(values.bedrooms),
+      bathrooms: cleanOptionalNumber(values.bathrooms),
+      year_built: cleanOptionalNumber(values.year_built),
+    };
+
     try {
       let result;
       if (mode === "edit" && initialValues && initialValues.listing_id) {
-        result = await updateListing(initialValues.listing_id, values);
-        toast.success("Listing updated successfully!");
+        // Get JWT for current user for edit
+        const jwt = await getCurrentUserJWT();
+        result = await updateListing(initialValues.listing_id, cleanedValues, jwt || undefined);
+        toast.success(t("listing_updated_success"));
       } else {
-        result = await createListing(values);
-        toast.success("Listing created successfully!");
-        console.log("New listing created:", values);
+        // Get JWT for current user
+        const jwt = await getCurrentUserJWT();
+        result = await createListing(cleanedValues, jwt || undefined);
+        toast.success(t("listing_created_success"));
       }
       router.push(`/${locale}/dashboard/listings`);
+      // Note: We don't reset isManuallyLoading here - let it stay true until navigation
     } catch (error: any) {
+      setIsManuallyLoading(false); // Only reset on error
       toast.error(
         error?.message ||
           (mode === "edit"
-            ? "Failed to update listing"
-            : "Failed to create listing")
+            ? t("listing_update_failed")
+            : t("listing_create_failed"))
       );
     }
   }
@@ -164,7 +263,14 @@ export default function ListingForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Track when form is fully rendered and ready
+  // React.useEffect(() => {
+  //   console.timeEnd('Form Complete Render');
+  //   console.log('✅ ListingForm fully rendered and mounted in DOM');
+  // }, []);
+
   // console.log("Current form values:", form.watch());
+  // Add translation keys for new toasts and errors if not present
 
   // Build a map from language_code to index for translations
   const translations = form.watch("translations") || [];
@@ -172,6 +278,9 @@ export default function ListingForm({
   translations.forEach((t: { language_code: string }, i: number) => {
     langIdxMap[t.language_code] = i;
   });
+
+  // Combined loading state - either React Hook Form's isSubmitting or our manual loading
+  const isLoading = form.formState.isSubmitting || isManuallyLoading;
 
   return (
     <Form {...form}>
@@ -204,7 +313,7 @@ export default function ListingForm({
               })()}
               <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
                 <Tabs defaultValue="en" className="w-full">
-                  <TabsList>
+                  <TabsList className={isLoading ? "pointer-events-none opacity-50" : ""}>
                     {languages.map((lang) => {
                       const idx = langIdxMap[lang.code];
                       const translations = form.watch("translations") || [];
@@ -262,6 +371,7 @@ export default function ListingForm({
                                     {...field}
                                     className="w-full"
                                     value={field.value ?? ""}
+                                    disabled={isLoading}
                                   />
                                 </FormControl>
                                 {/* Reserve space for error message to prevent layout shift */}
@@ -325,7 +435,7 @@ export default function ListingForm({
               })()}
               <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
                 <Tabs defaultValue="en" className="w-full">
-                  <TabsList>
+                  <TabsList className={isLoading ? "pointer-events-none opacity-50" : ""}>
                     {languages.map((lang) => {
                       const idx = langIdxMap[lang.code];
                       const translations = form.watch("translations") || [];
@@ -375,13 +485,14 @@ export default function ListingForm({
                                 </FormLabel>
                                 <FormControl>
                                   <textarea
-                                    className="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                                    className={`block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 ${form.formState.isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     placeholder={`${t(
                                       "description_placeholder"
                                     )} (${lang.label})`}
                                     rows={4}
                                     {...field}
                                     value={field.value ?? ""}
+                                    disabled={isLoading}
                                   />
                                 </FormControl>
                                 {/* Reserve space for error message to prevent layout shift */}
@@ -439,9 +550,10 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        defaultValue={
-                          field.value ? String(field.value) : undefined
+                        value={
+                          field.value ? String(field.value) : ""
                         }
+                        disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -481,9 +593,10 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        defaultValue={
-                          field.value ? String(field.value) : undefined
+                        value={
+                          field.value ? String(field.value) : ""
                         }
+                        disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -523,9 +636,10 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        defaultValue={
-                          field.value ? String(field.value) : undefined
+                        value={
+                          field.value ? String(field.value) : ""
                         }
+                        disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -576,6 +690,7 @@ export default function ListingForm({
                         type="number"
                         {...field}
                         value={field.value ?? ""}
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? undefined : +e.target.value
@@ -583,7 +698,11 @@ export default function ListingForm({
                         }
                       />
                     </FormControl>
-                    <FormMessage />
+                    <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
+                      {typeof form.formState.errors.building_size_sqm?.message === "string"
+                        ? t(form.formState.errors.building_size_sqm.message)
+                        : null}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -603,6 +722,7 @@ export default function ListingForm({
                         type="number"
                         {...field}
                         value={field.value ?? ""}
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? undefined : +e.target.value
@@ -610,7 +730,11 @@ export default function ListingForm({
                         }
                       />
                     </FormControl>
-                    <FormMessage />
+                    <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
+                      {typeof form.formState.errors.land_size_sqm?.message === "string"
+                        ? t(form.formState.errors.land_size_sqm.message)
+                        : null}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -630,6 +754,7 @@ export default function ListingForm({
                         type="number"
                         {...field}
                         value={field.value ?? ""}
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? undefined : +e.target.value
@@ -637,7 +762,11 @@ export default function ListingForm({
                         }
                       />
                     </FormControl>
-                    <FormMessage />
+                    <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
+                      {typeof form.formState.errors.bedrooms?.message === "string"
+                        ? t(form.formState.errors.bedrooms.message)
+                        : null}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -657,6 +786,7 @@ export default function ListingForm({
                         type="number"
                         {...field}
                         value={field.value ?? ""}
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? undefined : +e.target.value
@@ -664,7 +794,11 @@ export default function ListingForm({
                         }
                       />
                     </FormControl>
-                    <FormMessage />
+                    <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
+                      {typeof form.formState.errors.bathrooms?.message === "string"
+                        ? t(form.formState.errors.bathrooms.message)
+                        : null}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -677,6 +811,7 @@ export default function ListingForm({
               selected={form.watch("features") || []}
               onChange={(newSelected) => form.setValue("features", newSelected)}
               locale={locale}
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -708,6 +843,7 @@ export default function ListingForm({
                             ? Math.trunc(Number(field.value))
                             : ""
                         }
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) => {
                           const val = e.target.value;
                           field.onChange(
@@ -740,13 +876,18 @@ export default function ListingForm({
                         type="number"
                         {...field}
                         value={field.value === null || field.value === undefined ? "" : field.value}
+                        disabled={form.formState.isSubmitting}
                         onChange={(e) => {
                           const val = e.target.value;
                           field.onChange(val === "" ? undefined : +val);
                         }}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
+                      {typeof form.formState.errors.year_built?.message === "string"
+                        ? t(form.formState.errors.year_built.message)
+                        : null}
+                    </div>
                   </FormItem>
                 )}
               />
@@ -764,9 +905,10 @@ export default function ListingForm({
                       onValueChange={(val) =>
                         field.onChange(val ? +val : undefined)
                       }
-                      defaultValue={
-                        field.value ? String(field.value) : undefined
+                      value={
+                        field.value ? String(field.value) : ""
                       }
+                      disabled={form.formState.isSubmitting}
                     >
                       <FormControl>
                         <SelectTrigger className="min-w-[240px]">
@@ -793,7 +935,7 @@ export default function ListingForm({
             </div>
           </div>
         </div>
-        {children}
+        {typeof children === 'function' ? children({ isSubmitting: isLoading }) : children}
       </form>
     </Form>
   );

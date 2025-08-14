@@ -35,9 +35,8 @@ router.use('/locations', locationsRouter);
 // Mount the ownership types router at /ownership_types
 router.use('/ownership_types', ownershipTypesRouter);
 
-// When you add user routes, you would mount them here:
-// const usersRouter = require('./users.routes');
-// router.use('/users', usersRouter);
+const usersRouter = require('./users.routes');
+router.use('/users', usersRouter);
 // Mount the lookups router at /lookups
 const oRouter = require('./lookups.routes');
 router.use('/lookups', lookupsRouter);

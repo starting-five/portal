@@ -102,10 +102,15 @@
         "form_invalid": "Por favor corrige los errores destacados",
         "land_size_label": "Superficie de terreno (m²)",
         "land_size_placeholder": "ej. 300",
+        "listing_create_failed": "No se pudo crear el listado.",
+        "listing_created_success": "¡Listado creado exitosamente!",
         "listing_type_label": "Tipo de anuncio *",
         "listing_type_placeholder": "Selecciona tipo de anuncio",
+        "listing_update_failed": "No se pudo actualizar el listado.",
+        "listing_updated_success": "¡Listado actualizado exitosamente!",
         "location_label": "Ubicación *",
         "location_placeholder": "Selecciona ubicación",
+        "non_negative_error": "El valor debe ser cero o mayor.",
         "ownership_type_label": "Tipo de propiedad *",
         "ownership_type_placeholder": "Selecciona tipo de propiedad",
         "price_label": "Precio *",
@@ -115,6 +120,7 @@
         "property_details_header": "Detalles de la propiedad",
         "required_field": "Campo requerido",
         "save": "Guardar",
+        "saving": "Guardando...",
         "size_features_header": "Tamaño y características",
         "status_label": "Estado *",
         "status_placeholder": "Selecciona estado",
@@ -136,8 +142,17 @@
     "MyListings": {
         "add_listing": "Agregar Listado",
         "description": "Ver y gestionar mis listados de propiedades",
+        "empty_message": "Aún no tienes listados. ¡Comienza agregando tu primera propiedad!",
         "error": "Error al cargar los listados. Por favor, inténtalo de nuevo más tarde.",
         "title": "Mis Listados"
+    },
+    "PropertyCard": {
+        "delete_title": "Eliminar listado",
+        "delete_confirm": "¿Estás seguro de que deseas eliminar este listado? Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "deleted_success": "¡Listado eliminado exitosamente!",
+        "delete_failed": "No se pudo eliminar el listado. Por favor, inténtalo de nuevo."
     },
     "Sidebar": {
         "home": "Inicio",

@@ -102,10 +102,15 @@
         "form_invalid": "Silakan perbaiki kesalahan yang ditandai",
         "land_size_label": "Luas Tanah (m²)",
         "land_size_placeholder": "mis. 300",
+        "listing_create_failed": "Gagal membuat listing.",
+        "listing_created_success": "Listing berhasil dibuat!",
         "listing_type_label": "Jenis Listing *",
         "listing_type_placeholder": "Pilih jenis listing",
+        "listing_update_failed": "Gagal memperbarui listing.",
+        "listing_updated_success": "Listing berhasil diperbarui!",
         "location_label": "Lokasi *",
         "location_placeholder": "Pilih lokasi",
+        "non_negative_error": "Nilai harus nol atau lebih besar.",
         "ownership_type_label": "Jenis Kepemilikan *",
         "ownership_type_placeholder": "Pilih jenis kepemilikan",
         "price_label": "Harga *",
@@ -115,6 +120,7 @@
         "property_details_header": "Detail Properti",
         "required_field": "Bidang wajib",
         "save": "Simpan",
+        "saving": "Menyimpan...",
         "size_features_header": "Ukuran & Fitur",
         "status_label": "Status *",
         "status_placeholder": "Pilih status",
@@ -136,8 +142,17 @@
     "MyListings": {
         "add_listing": "Tambahkan Listing",
         "description": "Lihat dan kelola listing properti saya",
+        "empty_message": "Anda belum memiliki listing. Mulai dengan menambahkan properti pertama Anda!",
         "error": "Gagal memuat listing. Silakan coba lagi nanti.",
         "title": "Listing Saya"
+    },
+    "PropertyCard": {
+        "delete_title": "Hapus Listing",
+        "delete_confirm": "Apakah Anda yakin ingin menghapus listing ini? Tindakan ini tidak dapat dibatalkan.",
+        "cancel": "Batal",
+        "delete": "Hapus",
+        "deleted_success": "Listing berhasil dihapus!",
+        "delete_failed": "Gagal menghapus listing. Silakan coba lagi."
     },
     "Sidebar": {
         "home": "Beranda",
