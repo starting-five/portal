@@ -69,6 +69,21 @@
             "title": "Set a New Password"
         }
     },
+    "Dropzone": {
+        "drag_drop_or_select": "Drag and drop or",
+        "failed_to_upload": "Failed to upload: {error}",
+        "file_too_large": "File is larger than {max} (Size: {size})",
+        "max_file_size": "Maximum file size: {size}",
+        "max_files_error": "You may upload only up to {maxFiles} files, please remove {removeCount} file{pluralSuffix}.",
+        "select_label": "select {count, plural, one {file} other {files}}",
+        "successfully_uploaded": "Successfully uploaded {count} file{count, plural, one {} other {s}}",
+        "successfully_uploaded_file": "Successfully uploaded file",
+        "to_upload": "to upload",
+        "upload_files": "Upload files",
+        "upload_label": "Upload {maxFiles, plural, one {file} other {{maxFiles} files}}",
+        "uploading": "Uploading...",
+        "uploading_file": "Uploading file..."
+    },
     "Features": {
         "beachfront": "Beachfront",
         "cliff_top": "Cliff Top",
@@ -100,6 +115,9 @@
         "description_placeholder": "Short description",
         "features_label": "Features",
         "form_invalid": "Please correct the highlighted errors",
+        "image_move_failed": "Failed to move image",
+        "image_upload_failed": "Failed to upload image",
+        "images_header": "Images",
         "land_size_label": "Land Size (sqm)",
         "land_size_placeholder": "e.g. 300",
         "listing_create_failed": "Failed to create listing.",
@@ -113,6 +131,7 @@
         "non_negative_error": "Value must be zero or greater.",
         "ownership_type_label": "Ownership Type *",
         "ownership_type_placeholder": "Select ownership type",
+        "photo_gallery_label": "Photo Gallery",
         "price_label": "Price *",
         "price_placeholder": "e.g. 250000",
         "pricing_status_header": "Pricing & Status",
@@ -135,6 +154,9 @@
     "LocaleSwitcher": {
         "aria_label": "Change language"
     },
+    "LogoutButton": {
+        "logout": "Logout"
+    },
     "metadata": {
         "description": "A portal for managing property listings",
         "title": "Property Portal"
@@ -147,12 +169,13 @@
         "title": "My Listings"
     },
     "PropertyCard": {
-        "delete_title": "Delete Listing",
-        "delete_confirm": "Are you sure you want to delete this listing? This action cannot be undone.",
         "cancel": "Cancel",
         "delete": "Delete",
+        "delete_confirm": "Are you sure you want to delete this listing? This action cannot be undone.",
+        "delete_failed": "Failed to delete listing. Please try again.",
+        "delete_title": "Delete Listing",
         "deleted_success": "Listing deleted successfully!",
-        "delete_failed": "Failed to delete listing. Please try again."
+        "no_photos_available": "No photos available"
     },
     "Sidebar": {
         "home": "Home",
@@ -160,5 +183,8 @@
         "new_listing": "New Listing",
         "profile": "Profile",
         "settings": "Settings"
+    },
+    "SupabaseImageManager": {
+        "delete_image_tooltip": "Delete image"
     }
 }

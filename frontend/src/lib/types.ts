@@ -1,4 +1,3 @@
-
 export type Feature = {
   id: number;
   key: string;
@@ -10,6 +9,9 @@ export type ListingImage = {
   id: number;
   listing_id: number;
   url: string;
+  alt_text?: string;
+  sort_order?: number;
+  created_at?: string;
 };
 
 export type ListingType = {
@@ -35,6 +37,7 @@ export type OwnershipType = {
 export type Listing = {
   id: number;
   listing_id: number;
+  images: ListingImage[];
   [key: string]: unknown;
 };
 

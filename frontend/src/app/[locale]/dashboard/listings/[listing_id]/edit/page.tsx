@@ -7,7 +7,11 @@ import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingFormActions from "./ListingFormActions";
 
-export default function EditListingPage({ params }: { params: Promise<{ locale: string; listing_id: string }> }) {
+export default function EditListingPage({
+  params,
+}: {
+  params: Promise<{ locale: string; listing_id: string }>;
+}) {
   const [listingId, setListingId] = useState<string | null>(null);
   const [listing, setListing] = useState<any>(null);
   const t = useTranslations("ListingForm");
@@ -18,16 +22,16 @@ export default function EditListingPage({ params }: { params: Promise<{ locale: 
         const { listing_id } = await params;
         // console.log('🔍 Loading listing with ID:', listing_id);
         setListingId(listing_id);
-        
+
         const listingData = await getListing(listing_id);
         // console.log('📡 API response:', listingData);
-        
+
         if (!listingData) {
           // console.log('❌ No listing data returned');
           notFound();
           return;
         }
-        
+
         // console.log('✅ Setting listing data:', listingData);
         setListing(listingData);
       } catch (error) {
@@ -35,7 +39,7 @@ export default function EditListingPage({ params }: { params: Promise<{ locale: 
         notFound();
       }
     }
-    
+
     loadData();
   }, [params]);
 
@@ -48,9 +52,15 @@ export default function EditListingPage({ params }: { params: Promise<{ locale: 
           {t("title_edit")}
         </h1>
         <p className="mb-8 text-slate-600">{t("description_edit")}</p>
-        
+
         <ListingForm initialValues={listing} mode="edit">
-          {({ isSubmitting }) => <ListingFormActions isSubmitting={isSubmitting} />}
+          {({ isSubmitting, uploadedImages, currentUser }) => (
+            <ListingFormActions
+              isSubmitting={isSubmitting}
+              uploadedImages={uploadedImages}
+              currentUser={currentUser}
+            />
+          )}
         </ListingForm>
       </div>
     </div>

@@ -2,26 +2,50 @@
 
 import { Button } from "@/components/ui/button";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type ListingFormActionsProps = {
   isSubmitting?: boolean;
+  uploadedImages?: { url: string }[];
+  currentUser?: { id: string };
 };
 
-export default function ListingFormActions({ isSubmitting = false }: ListingFormActionsProps) {
+export default function ListingFormActions({
+  isSubmitting = false,
+  uploadedImages,
+  currentUser,
+}: ListingFormActionsProps) {
   const t = useTranslations("ListingForm");
   const locale = useLocale();
+  const router = useRouter();
+
+  async function handleCancel() {
+    console.log("Handling cancel action");
+    if (uploadedImages && uploadedImages.length && currentUser) {
+      const { deleteUserTmpImages } = await import(
+        "@/lib/supabase/listingImageUtils"
+      );
+      const { createClient } = await import("@/lib/supabase/client");
+      await deleteUserTmpImages({
+        supabase: createClient(),
+        userId: currentUser.id,
+        images: uploadedImages,
+      });
+    }
+    router.push(`/${locale}/dashboard/listings`);
+  }
 
   return (
     <div className="flex justify-end gap-2 pt-4">
-      <Link
-        href={`/${locale}/dashboard/listings`}
-        className={`transition-colors duration-150 hover:bg-accent/20 focus:ring-2 focus:ring-primary/30 border border-input bg-background text-foreground rounded-md px-4 py-2 text-sm font-medium ${
-          isSubmitting ? "pointer-events-none opacity-50" : ""
-        }`}
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isSubmitting}
+        onClick={handleCancel}
+        className="transition-colors duration-150 hover:bg-accent/20 focus:ring-2 focus:ring-primary/30 border border-input bg-background text-foreground rounded-md px-4 py-2 text-sm font-medium"
       >
         {t("cancel")}
-      </Link>
+      </Button>
       <Button
         type="submit"
         variant="blue"

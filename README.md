@@ -79,4 +79,24 @@ Running on EC2:
 To create network so that frontend knows the backend within the same instance:
 docker network create portal-network
 docker run -d --name backend --network portal-network <backend-image>
-docker run -d --name frontend --network portal-network -p 3000:3000 <frontend-image>
+docker run -d --name frontend --network portal-network -p 80:3000 <frontend-image>
+
+
+Setting up EC2 instance:
+1. After getting private key, set permission so only the owner can read it, ie. "chmod 600 portal-prod-sg.pem".
+2. SSH into the instance and do the following
+   a. Install Docker 
+      - sudo yum update -y
+      - sudo dnf update -y
+      - sudo dnf install docker -y
+      - sudo systemctl enable --now docker
+      - sudo usermod -aG docker $USER 
+   b. Exit from the terminal and log back in. Docker is now running and enabled at boot and your user should 
+      now have Docker permissions.
+3. SCP tar files into /ec2-user/images and unload them:
+   - docker load -i portal-backend.tar
+   - docker load -i portal-frontend.tar
+4. Create a network; expose backend port 3001 for client-side API calls
+   - docker network create portal-network
+   - docker run -d --name backend --network portal-network -p 3001:3001 portal-backend
+   - docker run -d --name frontend --network portal-network -p 80:3000 portal-frontend

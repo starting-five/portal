@@ -425,6 +425,33 @@ const findByPublicIdWithTranslation = async (listing_id, lang = "en") => {
   };
 };
 
+/**
+ * Finds all listings for a specific user and returns translations for the requested language.
+ */
+const findAllByUserWithTranslations = async (userId, lang = "en") => {
+  const query = `
+    SELECT
+      l.*, l.price,
+      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE(json_agg(DISTINCT f.id) FILTER (WHERE f.id IS NOT NULL), '[]') AS features,
+      COALESCE(t.title, NULL) AS title,
+      COALESCE(t.description, NULL) AS description
+    FROM listings l
+    LEFT JOIN listing_types lt ON l.listing_type_id = lt.id
+    LEFT JOIN ownership_types ot ON l.ownership_type_id = ot.id
+    LEFT JOIN listing_statuses ls ON l.status_id = ls.id
+    LEFT JOIN listing_images li ON l.id = li.listing_id
+    LEFT JOIN listing_features lf ON l.id = lf.listing_id
+    LEFT JOIN features f ON lf.feature_id = f.id
+    LEFT JOIN listing_translations t ON l.id = t.listing_id AND t.language_code = $2
+    WHERE l.user_id = $1
+    GROUP BY l.id, lt.id, ot.id, ls.id, t.title, t.description
+    ORDER BY l.created_at DESC;
+  `;
+  const { rows } = await db.query(query, [userId, lang]);
+  return rows;
+};
+
 module.exports = {
   findAll,
   findByPublicId,
@@ -434,4 +461,5 @@ module.exports = {
   findByFilters,
   findAllWithTranslations,
   findByPublicIdWithTranslation,
+  findAllByUserWithTranslations,
 };

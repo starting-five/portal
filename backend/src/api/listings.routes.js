@@ -1,7 +1,10 @@
-const express = require('express');
+/* eslint-disable @typescript-eslint/no-require-imports */
+const express = require("express");
+const listingsController = require("../controllers/listings.controller");
+const { requireUser } = require("../middleware/auth");
+const listingImageController = require("../controllers/listing_image.controller");
+
 const router = express.Router();
-const listingsController = require('../controllers/listings.controller');
-const { requireUser } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -38,7 +41,7 @@ const { requireUser } = require('../middleware/auth');
  *         description: Internal server error
  */
 // GET /api/v1/listings - Retrieve all listings
-router.get('/', listingsController.getAllListings);
+router.get("/", listingsController.getAllListings);
 
 /**
  * @swagger
@@ -72,7 +75,7 @@ router.get('/', listingsController.getAllListings);
  *         description: Listing not found
  */
 // GET /api/v1/listings/:listing_id - Retrieve a single listing
-router.get('/:listing_id', listingsController.getListingById);
+router.get("/:listing_id", listingsController.getListingById);
 
 /**
  * @swagger
@@ -159,7 +162,32 @@ router.get('/:listing_id', listingsController.getListingById);
  *               $ref: '#/components/schemas/Listing'
  */
 // POST /api/v1/listings - Create a new listing (requires authentication)
-router.post('/', requireUser, listingsController.createListing);
+router.post("/", requireUser, listingsController.createListing);
+/**
+ * @swagger
+ * /listings/{listingId}/images:
+ *   get:
+ *     summary: Retrieve all images for a specific listing
+ *     tags: [Listings]
+ *     parameters:
+ *       - in: path
+ *         name: listingId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Public ID of the listing
+ *     responses:
+ *       200:
+ *         description: A list of images for the listing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ListingImage'
+ */
+// GET /api/v1/listings/:listingId/images - Retrieve all images for a listing
+router.get("/:listingId/images", listingImageController.getImagesForListing);
 
 /**
  * @swagger
@@ -236,7 +264,7 @@ router.post('/', requireUser, listingsController.createListing);
  *         description: Listing not found
  */
 // PUT /api/v1/listings/:listing_id - Update a listing (requires authentication)
-router.put('/:listing_id', requireUser, listingsController.updateListing);
+router.put("/:listing_id", requireUser, listingsController.updateListing);
 
 /**
  * @swagger
@@ -258,6 +286,6 @@ router.put('/:listing_id', requireUser, listingsController.updateListing);
  *         description: Listing not found
  */
 // DELETE /api/v1/listings/:listing_id - Delete a listing (requires authentication)
-router.delete('/:listing_id', requireUser, listingsController.deleteListing);
+router.delete("/:listing_id", requireUser, listingsController.deleteListing);
 
 module.exports = router;

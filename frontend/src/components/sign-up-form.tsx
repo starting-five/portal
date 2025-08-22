@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useCreateUser } from "@/hooks/useCreateUser";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -35,6 +36,7 @@ export function SignUpForm({
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("AuthForm");
+  const createUserMutation = useCreateUser();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +72,7 @@ export function SignUpForm({
     setIsLoading(true);
     const supabase = createClient();
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -78,8 +80,9 @@ export function SignUpForm({
           captchaToken,
         },
       });
-      debugger;
+
       if (error) throw error;
+
       router.push(`/${locale}/auth/sign-up-success`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : t("errors.unknown"));
@@ -203,7 +206,10 @@ export function SignUpForm({
                 <Turnstile
                   ref={turnstileRef}
                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-                  options={{ language: locale }}
+                  options={{
+                    language: locale,
+                    execution: "render",
+                  }}
                   onSuccess={(token) => {
                     setCaptchaToken(token);
                   }}

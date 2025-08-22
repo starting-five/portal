@@ -6,7 +6,13 @@ const Listing = require("../models/listing.model");
 const getAllListings = async (req, res) => {
   try {
     const lang = req.query.lang || "en";
-    const listings = await Listing.findAllWithTranslations(lang);
+    const userId = req.query.user_id;
+    let listings;
+    if (userId) {
+      listings = await Listing.findAllByUserWithTranslations(userId, lang);
+    } else {
+      listings = await Listing.findAllWithTranslations(lang);
+    }
     res.status(200).json(listings);
   } catch (error) {
     console.error("Error fetching listings:", error.stack);

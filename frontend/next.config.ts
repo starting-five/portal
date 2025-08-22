@@ -22,13 +22,15 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig: NextConfig = {
   output: 'standalone',
   images: {
-    domains: ['images.pexels.com', 'cdn.pixabay.com'],
+    domains: [
+      'bchwkypqlkxavkoqgikr.supabase.co',
+    ],
   },
   async rewrites() {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:3001/api/v1/:path*',
+        destination: 'http://backend:3001/api/v1/:path*',
       },
     ];
   },

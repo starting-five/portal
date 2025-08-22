@@ -19,6 +19,7 @@ import {
   Bath,
   Bed,
   Calendar,
+  CameraOff,
   Crop,
   Hash,
   LayoutGrid,
@@ -45,6 +46,7 @@ import {
   useLocationLabel,
   useOwnershipLabel,
 } from "@/hooks/useLookupLabels";
+import type { ListingImage } from "@/lib/types";
 
 // Property type definition
 export type Property = {
@@ -53,7 +55,7 @@ export type Property = {
   title: string;
   location_id: number;
   price: string;
-  images: string[];
+  images: ListingImage[];
   listing_type_id: number;
   ownership_type_id: number;
   status_id: number;
@@ -165,14 +167,23 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
 
   const location = useLocationLabel(property.location_id);
 
+  // const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  //   // Prevent navigation if clicking edit/delete buttons
+  //   if ((e.target as HTMLElement).closest('.property-action')) return;
+  //   router.push(`/${locale || "en"}/dashboard/listings/${property.listing_id}`);
+  // };
+
   return (
     <div
-      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full mx-auto flex flex-col"
+      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full mx-auto flex flex-col cursor-pointer"
       style={{
         pointerEvents: isFading ? "none" : undefined,
         opacity: isFading ? 0 : 1,
         transition: "opacity 600ms",
       }}
+      role="button"
+      tabIndex={0}
+      aria-label={property.title}
     >
       {/* Edit and Delete buttons top-right - only show if user owns the listing */}
       {canShowEditDelete && (
@@ -181,8 +192,9 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
             href={`/${locale || ""}/dashboard/listings/${
               property.listing_id
             }/edit`}
-            className="rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
+            className="property-action rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
             title="Edit listing"
+            onClick={(e) => e.stopPropagation()}
           >
             <Pencil className="h-3 w-3" />
           </Link>
@@ -190,9 +202,12 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
             <AlertDialogTrigger asChild>
               <button
                 type="button"
-                className="rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
+                className="property-action rounded-full bg-white/80 p-2 text-red-600 shadow hover:bg-red-100 hover:text-red-700 transition"
                 title={tCard("delete_title")}
-                onClick={() => setDialogOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDialogOpen(true);
+                }}
               >
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -244,8 +259,8 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
                 key={idx}
               >
                 <Image
-                  src={img}
-                  alt={property.title || "Property image"}
+                  src={img.url}
+                  alt={img.alt_text || "Property image"}
                   width={900}
                   height={600}
                   className="max-h-full max-w-full object-contain mx-auto my-auto transition-transform duration-300 group-hover:scale-105"
@@ -259,21 +274,29 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
           </div>
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-gray-200">
-            <Image
-              src={
-                property.images && property.images.length === 1
-                  ? property.images[0]
-                  : "/window.svg"
-              }
-              alt={property.title || "Property image"}
-              width={900}
-              height={600}
-              className="max-h-full max-w-full object-contain mx-auto my-auto"
-              style={{ aspectRatio: "3/2", display: "block" }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/window.svg";
-              }}
-            />
+            {property.images && property.images.length === 1 ? (
+              <Image
+                src={property.images[0].url}
+                alt={property.title || "Property image"}
+                width={900}
+                height={600}
+                className="max-h-full max-w-full object-contain mx-auto my-auto"
+                style={{ aspectRatio: "3/2", display: "block" }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/window.svg";
+                }}
+              />
+            ) : (
+              <span className="flex flex-col items-center justify-center w-full h-full">
+                <CameraOff
+                  className="h-16 w-16 text-gray-400"
+                  aria-label={tCard("no_photos_available")}
+                />
+                <span className="mt-2 text-sm text-gray-500">
+                  {tCard("no_photos_available")}
+                </span>
+              </span>
+            )}
           </div>
         )}
         {/* Arrows */}

@@ -69,6 +69,21 @@
             "title": "Buat Kata Sandi Baru"
         }
     },
+    "Dropzone": {
+        "drag_drop_or_select": "Seret dan jatuhkan atau",
+        "failed_to_upload": "Gagal mengunggah: {error}",
+        "file_too_large": "File lebih besar dari {max} (Ukuran: {size})",
+        "max_file_size": "Ukuran file maksimum: {size}",
+        "max_files_error": "Anda hanya dapat mengunggah hingga {maxFiles} file, silakan hapus {removeCount} file{pluralSuffix}.",
+        "select_label": "pilih {count, plural, one {file} other {file}}",
+        "successfully_uploaded": "Berhasil mengunggah {count} file{count, plural, one {} other {s}}",
+        "successfully_uploaded_file": "Berhasil mengunggah file",
+        "to_upload": "untuk mengunggah",
+        "upload_files": "Unggah file",
+        "upload_label": "Unggah {maxFiles, plural, one {file} other {{maxFiles} file}}",
+        "uploading": "Sedang mengunggah...",
+        "uploading_file": "Sedang mengunggah file..."
+    },
     "Features": {
         "beachfront": "Tepi Pantai",
         "cliff_top": "Tepi Tebing",
@@ -100,19 +115,23 @@
         "description_placeholder": "Deskripsi singkat",
         "features_label": "Fitur",
         "form_invalid": "Silakan perbaiki kesalahan yang ditandai",
+        "image_move_failed": "Gagal memindahkan gambar",
+        "image_upload_failed": "Gagal mengunggah gambar",
+        "images_header": "Gambar",
         "land_size_label": "Luas Tanah (m²)",
         "land_size_placeholder": "mis. 300",
         "listing_create_failed": "Gagal membuat listing.",
-        "listing_created_success": "Listing berhasil dibuat!",
+        "listing_created_success": "Properti berhasil dibuat!",
         "listing_type_label": "Jenis Listing *",
         "listing_type_placeholder": "Pilih jenis listing",
         "listing_update_failed": "Gagal memperbarui listing.",
-        "listing_updated_success": "Listing berhasil diperbarui!",
+        "listing_updated_success": "Properti berhasil diperbarui!",
         "location_label": "Lokasi *",
         "location_placeholder": "Pilih lokasi",
         "non_negative_error": "Nilai harus nol atau lebih besar.",
         "ownership_type_label": "Jenis Kepemilikan *",
         "ownership_type_placeholder": "Pilih jenis kepemilikan",
+        "photo_gallery_label": "Galeri Foto",
         "price_label": "Harga *",
         "price_placeholder": "mis. 250000",
         "pricing_status_header": "Harga & Status",
@@ -135,6 +154,9 @@
     "LocaleSwitcher": {
         "aria_label": "Ganti bahasa"
     },
+    "LogoutButton": {
+        "logout": "Keluar"
+    },
     "metadata": {
         "description": "Portal untuk mengelola listing properti",
         "title": "Portal Properti"
@@ -147,12 +169,13 @@
         "title": "Listing Saya"
     },
     "PropertyCard": {
-        "delete_title": "Hapus Listing",
-        "delete_confirm": "Apakah Anda yakin ingin menghapus listing ini? Tindakan ini tidak dapat dibatalkan.",
         "cancel": "Batal",
         "delete": "Hapus",
+        "delete_confirm": "Apakah Anda yakin ingin menghapus listing ini? Tindakan ini tidak dapat dibatalkan.",
+        "delete_failed": "Gagal menghapus listing. Silakan coba lagi.",
+        "delete_title": "Hapus Listing",
         "deleted_success": "Listing berhasil dihapus!",
-        "delete_failed": "Gagal menghapus listing. Silakan coba lagi."
+        "no_photos_available": "Tidak ada foto tersedia"
     },
     "Sidebar": {
         "home": "Beranda",
@@ -160,5 +183,8 @@
         "new_listing": "Listing Baru",
         "profile": "Profil",
         "settings": "Pengaturan"
+    },
+    "SupabaseImageManager": {
+        "delete_image_tooltip": "Hapus foto"
     }
 }

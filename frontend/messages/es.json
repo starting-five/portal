@@ -69,6 +69,21 @@
             "title": "Establece una nueva contraseña"
         }
     },
+    "Dropzone": {
+        "drag_drop_or_select": "Arrastre y suelte o",
+        "failed_to_upload": "Error al subir: {error}",
+        "file_too_large": "El archivo es más grande que {max} (Tamaño: {size})",
+        "max_file_size": "Tamaño máximo de archivo: {size}",
+        "max_files_error": "Solo puede subir hasta {maxFiles} archivos, elimine {removeCount} archivo{pluralSuffix}.",
+        "select_label": "seleccione {count, plural, one {archivo} other {archivos}}",
+        "successfully_uploaded": "Archivo(s) subido(s) correctamente: {count}",
+        "successfully_uploaded_file": "Archivo subido correctamente",
+        "to_upload": "para subir",
+        "upload_files": "Subir archivos",
+        "upload_label": "Subir {maxFiles, plural, one {archivo} other {{maxFiles} archivos}}",
+        "uploading": "Subiendo...",
+        "uploading_file": "Subiendo archivo..."
+    },
     "Features": {
         "beachfront": "Frente a la playa",
         "cliff_top": "Acantilado",
@@ -100,19 +115,23 @@
         "description_placeholder": "Descripción corta",
         "features_label": "Características",
         "form_invalid": "Por favor corrige los errores destacados",
+        "image_move_failed": "No se pudo mover la imagen",
+        "image_upload_failed": "No se pudo subir la imagen",
+        "images_header": "Imágenes",
         "land_size_label": "Superficie de terreno (m²)",
         "land_size_placeholder": "ej. 300",
         "listing_create_failed": "No se pudo crear el listado.",
-        "listing_created_success": "¡Listado creado exitosamente!",
+        "listing_created_success": "¡Propiedad creada exitosamente!",
         "listing_type_label": "Tipo de anuncio *",
         "listing_type_placeholder": "Selecciona tipo de anuncio",
         "listing_update_failed": "No se pudo actualizar el listado.",
-        "listing_updated_success": "¡Listado actualizado exitosamente!",
+        "listing_updated_success": "¡Propiedad actualizada exitosamente!",
         "location_label": "Ubicación *",
         "location_placeholder": "Selecciona ubicación",
         "non_negative_error": "El valor debe ser cero o mayor.",
         "ownership_type_label": "Tipo de propiedad *",
         "ownership_type_placeholder": "Selecciona tipo de propiedad",
+        "photo_gallery_label": "Galería de Fotos",
         "price_label": "Precio *",
         "price_placeholder": "ej. 250000",
         "pricing_status_header": "Precio y estado",
@@ -135,6 +154,9 @@
     "LocaleSwitcher": {
         "aria_label": "Cambiar idioma"
     },
+    "LogoutButton": {
+        "logout": "Cerrar sesión"
+    },
     "metadata": {
         "description": "Un portal para gestionar listados de propiedades",
         "title": "Portal de Propiedades"
@@ -147,12 +169,13 @@
         "title": "Mis Listados"
     },
     "PropertyCard": {
-        "delete_title": "Eliminar listado",
-        "delete_confirm": "¿Estás seguro de que deseas eliminar este listado? Esta acción no se puede deshacer.",
         "cancel": "Cancelar",
         "delete": "Eliminar",
+        "delete_confirm": "¿Estás seguro de que deseas eliminar este listado? Esta acción no se puede deshacer.",
+        "delete_failed": "No se pudo eliminar el listado. Por favor, inténtalo de nuevo.",
+        "delete_title": "Eliminar listado",
         "deleted_success": "¡Listado eliminado exitosamente!",
-        "delete_failed": "No se pudo eliminar el listado. Por favor, inténtalo de nuevo."
+        "no_photos_available": "No hay fotos disponibles"
     },
     "Sidebar": {
         "home": "Inicio",
@@ -160,5 +183,8 @@
         "new_listing": "Nuevo Listado",
         "profile": "Perfil",
         "settings": "Configuraciones"
+    },
+    "SupabaseImageManager": {
+        "delete_image_tooltip": "Eliminar imagen"
     }
 }
