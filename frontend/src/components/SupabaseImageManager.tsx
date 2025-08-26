@@ -35,7 +35,7 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
   initialImages = [],
   bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "listing-images",
   folder = "uploads",
-  maxFiles = 10,
+  maxFiles = 30,
   maxFileSize = 10 * 1024 * 1024,
   onChange,
 }) => {

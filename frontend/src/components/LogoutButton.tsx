@@ -20,7 +20,7 @@ export function LogoutButton() {
     dispatch(clearAuthUser());
     // Redirect to login or home page after logout
     // If you have locale in the path, extract it
-    const segments = pathname.split("/").filter(Boolean);
+    const segments = (pathname ?? "").split("/").filter(Boolean);
     const locale = segments.length > 0 ? segments[0] : "";
     router.push(locale ? `/${locale}/` : "/");
   };

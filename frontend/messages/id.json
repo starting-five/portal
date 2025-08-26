@@ -75,6 +75,7 @@
         "file_too_large": "File lebih besar dari {max} (Ukuran: {size})",
         "max_file_size": "Ukuran file maksimum: {size}",
         "max_files_error": "Anda hanya dapat mengunggah hingga {maxFiles} file, silakan hapus {removeCount} file{pluralSuffix}.",
+        "optimized_for_web": "Foto secara otomatis dioptimalkan untuk tampilan web",
         "select_label": "pilih {count, plural, one {file} other {file}}",
         "successfully_uploaded": "Berhasil mengunggah {count} file{count, plural, one {} other {s}}",
         "successfully_uploaded_file": "Berhasil mengunggah file",

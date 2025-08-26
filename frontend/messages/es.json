@@ -75,6 +75,7 @@
         "file_too_large": "El archivo es más grande que {max} (Tamaño: {size})",
         "max_file_size": "Tamaño máximo de archivo: {size}",
         "max_files_error": "Solo puede subir hasta {maxFiles} archivos, elimine {removeCount} archivo{pluralSuffix}.",
+        "optimized_for_web": "Las imágenes se optimizan automáticamente para su visualización en la web",
         "select_label": "seleccione {count, plural, one {archivo} other {archivos}}",
         "successfully_uploaded": "Archivo(s) subido(s) correctamente: {count}",
         "successfully_uploaded_file": "Archivo subido correctamente",

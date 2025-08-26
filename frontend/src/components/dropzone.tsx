@@ -126,7 +126,7 @@ const DropzoneContent = ({ className }: { className?: string }) => {
             key={`${file.name}-${idx}`}
             className="flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4 "
           >
-            {file.type.startsWith("image/") ? (
+            {file.type && file.type.startsWith("image/") ? (
               <div className="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
                 <img
                   src={file.preview}
@@ -242,6 +242,9 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
             {t("select_label", { count: maxFiles })}
           </a>{" "}
           {t("to_upload")}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {t("optimized_for_web")}
         </p>
         {maxFileSize !== Number.POSITIVE_INFINITY && (
           <p className="text-xs text-muted-foreground">

@@ -36,7 +36,7 @@ export default function LocaleSwitcher({
     setOptimisticLocale(newLocale); // Optimistic UI
     setPending(true); // Disable button
     setOpen(false); // Close dropdown immediately
-    const newPath = pathname.replace(/^\/[a-z]{2}\//, `/${newLocale}/`);
+    const newPath = (pathname ?? "").replace(/^\/[a-z]{2}\//, `/${newLocale}/`);
     router.push(newPath);
   };
 

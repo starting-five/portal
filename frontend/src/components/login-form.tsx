@@ -106,7 +106,7 @@ export function LoginForm({
         );
       }
 
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     } catch (error: unknown) {
       console.error("Login error:", error);
       setError(error instanceof Error ? error.message : t("errors.unknown"));

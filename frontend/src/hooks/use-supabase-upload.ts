@@ -5,6 +5,7 @@ import {
   type FileRejection,
   useDropzone,
 } from "react-dropzone";
+import { convertImageToWebP } from "@/lib/imageConversion";
 
 const supabase = createClient();
 
@@ -120,8 +121,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const onUpload = useCallback(async () => {
     setLoading(true);
 
-    // [Joshen] This is to support handling partial successes
-    // If any files didn't upload for any reason, hitting "Upload" again will only upload the files that had errors
+    // Only upload files that haven't succeeded or had errors
     const filesWithErrors = errors.map((x) => x.name);
     const filesToUpload =
       filesWithErrors.length > 0
@@ -131,24 +131,57 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
           ]
         : files;
 
-    const responses = await Promise.all(
+    // Convert all files to WebP before uploading
+    const convertedFiles = await Promise.all(
       filesToUpload.map(async (file) => {
-        const { error } = await supabase.storage
-          .from(bucketName)
-          .upload(!!path ? `${path}/${file.name}` : file.name, file, {
-            cacheControl: cacheControl.toString(),
-            upsert,
-          });
-        if (error) {
-          return { name: file.name, message: error.message };
-        } else {
-          return { name: file.name, message: undefined };
+        try {
+          return await convertImageToWebP(file);
+        } catch (err) {
+          setErrors((prev) => [...prev, { name: file.name, message: 'Conversion failed' }]);
+          return null;
         }
       })
     );
 
+    // Filter out any nulls (conversion failures)
+    const validConvertedFiles = convertedFiles
+      .map((file, idx) => ({ file, orig: filesToUpload[idx] }))
+      .filter(({ file }) => file !== null);
+
+    const responses = await Promise.all(
+      validConvertedFiles.map(async ({ file, orig }) => {
+        const { error } = await supabase.storage
+          .from(bucketName)
+          .upload(!!path ? `${path}/${file!.name}` : file!.name, file!, {
+            cacheControl: cacheControl.toString(),
+            upsert: true,
+          });
+        if (error) {
+          return { name: file!.name, message: error.message };
+        } else {
+          return { name: file!.name, message: undefined, file };
+        }
+      })
+    );
+
+    // Update local state to reference converted files for thumbnails
+    const uploadedFiles = responses
+      .filter((x) => x.message === undefined && x.file)
+      .map((x) => x.file as FileWithPreview);
+    setFiles((prevFiles) => {
+      // Remove originals that were converted, add converted files
+      const convertedNames = filesToUpload.map((f) => f.name);
+      const filtered = prevFiles.filter((f) => !convertedNames.includes(f.name));
+      // Add preview URLs to converted files
+      const convertedWithPreview = uploadedFiles.map((file) => {
+        (file as FileWithPreview).preview = URL.createObjectURL(file);
+        (file as FileWithPreview).errors = [];
+        return file as FileWithPreview;
+      });
+      return [...filtered, ...convertedWithPreview];
+    });
+
     const responseErrors = responses.filter((x) => x.message !== undefined);
-    // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
     setErrors(responseErrors);
 
     const responseSuccesses = responses.filter((x) => x.message === undefined);

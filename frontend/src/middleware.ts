@@ -5,6 +5,9 @@ import { routing } from "./i18n/routing";
 
 export async function middleware(request: NextRequest) {
   console.log("Main middleware hit:", request.nextUrl.pathname);
+  if (request.nextUrl.pathname === "/") {
+    console.log("Request is for root path '/'. Should redirect to default locale.");
+  }
 
   // First, run Supabase session/auth logic
   console.log("Running updateSession");
@@ -19,7 +22,8 @@ export async function middleware(request: NextRequest) {
   // Then, run next-intl locale routing
   const intlResponse = createMiddleware(routing)(request);
   if (intlResponse instanceof Response) {
-    console.log("Next-intl processing");
+    console.log("Next-intl processing. Response status:", intlResponse.status);
+    console.log("Next-intl response headers:", Object.fromEntries(intlResponse.headers.entries()));
     return intlResponse;
   }
 
@@ -28,5 +32,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
+  matcher: ["/", "/((?!api|trpc|_next|_vercel|.*\\..*).*)"],
 };

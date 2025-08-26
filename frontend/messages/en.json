@@ -83,6 +83,8 @@
         "upload_label": "Upload {maxFiles, plural, one {file} other {{maxFiles} files}}",
         "uploading": "Uploading...",
         "uploading_file": "Uploading file..."
+        ,
+        "optimized_for_web": "Images are automatically optimized for web display"
     },
     "Features": {
         "beachfront": "Beachfront",

@@ -18,9 +18,10 @@ function capitalize(word: string) {
 export default function DashboardBreadcrumbs() {
   const t = useTranslations("Sidebar");
   const pathname = usePathname();
-  const { locale } = useParams();
+  const params = useParams();
+  const locale = params?.locale as string | undefined;
   // Remove locale prefix and split path
-  const path = pathname.replace(/^\/[a-z]{2}\//, "");
+  const path = (pathname ?? "").replace(/^\/[a-z]{2}\//, "");
   const segments = path.split("/").filter(Boolean);
 
   // Map segment to translation key
