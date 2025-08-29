@@ -1,23 +1,28 @@
-import { Home, List } from "lucide-react";
-import { useTranslations } from "next-intl";
+"use client";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
+import type { RootState } from "@/store/store";
+import { Home, List } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { LogoutButton } from "./LogoutButton";
+import { useSelector } from "react-redux";
+import { NavUser } from "./nav-user";
 import { Separator } from "./ui/separator";
 
 export function AppSidebar({ locale }: { locale: string }) {
   const t = useTranslations("Sidebar");
+  const user = useSelector((state: RootState) => state.authUser?.user);
+
   // Menu items.
   const items = [
     {
@@ -30,11 +35,6 @@ export function AppSidebar({ locale }: { locale: string }) {
       url: `/${locale}/dashboard/listings`,
       icon: List,
     },
-    // {
-    //   title: t("settings"),
-    //   url: "#",
-    //   icon: Settings,
-    // },
   ];
 
   return (
@@ -67,10 +67,10 @@ export function AppSidebar({ locale }: { locale: string }) {
             </SidebarGroupContent>
           </SidebarGroup>
         </div>
-        <div className="mb-4 px-2">
-          <LogoutButton />
-        </div>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={{ email: user?.email }} />
+      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -1,4 +1,4 @@
-import ListingImage from '../models/listing_image.model';
+const ListingImage = require('../models/listing_image.model.js');
 
 /**
  * Retrieves all listing images.
@@ -111,7 +111,7 @@ const bulkCreateListingImages = async (req, res) => {
   }
 };
 
-export {
+module.exports = {
   getAllListingImages,
   getListingImageById,
   getImagesForListing, // Added for potential nested routes

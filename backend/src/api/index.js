@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const express = require('express');
 const router = express.Router();
 
@@ -12,6 +11,7 @@ const locationsRouter = require('./locations.routes');
 const ownershipTypesRouter = require('./ownership_types.routes');
 const lookupsRouter = require('./lookups.routes');
 const usersRouter = require('./users.routes');
+const convertImageRouter = require('./convert_image.routes').default;
 
 router.use('/listings', listingsRouter);
 router.use('/features', featuresRouter);
@@ -23,5 +23,6 @@ router.use('/locations', locationsRouter);
 router.use('/ownership_types', ownershipTypesRouter);
 router.use('/users', usersRouter);
 router.use('/lookups', lookupsRouter);
+router.use('/convert_image', convertImageRouter);
 
 module.exports = router;

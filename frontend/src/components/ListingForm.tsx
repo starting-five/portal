@@ -155,6 +155,7 @@ export default function ListingForm({
   }, [mode, initialValues?.listing_id]);
   // Get current user from Redux
   const currentUser = useSelector((state: RootState) => state.authUser?.user);
+  const watermarkUrl = currentUser?.watermark_url;
 
   const ownershipTypes =
     (useSelector(selectOwnershipTypes) as OwnershipType[]) || [];
@@ -1170,10 +1171,11 @@ export default function ListingForm({
           <SupabaseImageManager
             bucket={process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
             folder={currentUser ? `uploads/${currentUser?.id}/tmp` : undefined}
-            maxFiles={10}
+            maxFiles={30}
             maxFileSize={10 * 1024 * 1024}
             onChange={setUploadedImages}
             initialImages={uploadedImages}
+            watermarkUrl={watermarkUrl}
           />
         </div>
         {typeof children === "function"

@@ -22,23 +22,35 @@ export type SupabaseImage = {
   id?: number; // optional backend image ID for deletes
 };
 
-type SupabaseImageManagerProps = {
+export type SupabaseImageManagerProps = {
   initialImages?: SupabaseImage[];
   bucket?: string;
   folder?: string;
   maxFiles?: number;
   maxFileSize?: number;
   onChange?: (images: SupabaseImage[]) => void;
+  isWatermark?: boolean;
+  onUploadSuccess?: (url: string) => void;
+  onDeleteSuccess?: () => void;
+  watermarkUrl?: string;
 };
 
-const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
-  initialImages = [],
-  bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "listing-images",
-  folder = "uploads",
-  maxFiles = 10,
-  maxFileSize = 10 * 1024 * 1024,
-  onChange,
-}) => {
+const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = (props) => {
+  const {
+    initialImages = [],
+    bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ||
+      "listing-images",
+    folder = "uploads",
+    maxFiles = 30,
+    maxFileSize = 10 * 1024 * 1024,
+    onChange,
+    isWatermark = false,
+    onUploadSuccess,
+    onDeleteSuccess,
+    watermarkUrl,
+  } = props;
+
+  // Track uploaded images from SupabaseImageManager
   const [images, setImages] = useState<SupabaseImage[]>(initialImages);
   const t = useTranslations("SupabaseImageManager");
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
@@ -50,10 +62,11 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
   const upload = useSupabaseUpload({
     bucketName: bucket,
     path: folder,
-    allowedMimeTypes: ["image/*"],
+    allowedMimeTypes: isWatermark ? ["image/png"] : ["image/*"],
     maxFiles: maxFiles - images.length,
     maxFileSize,
     upsert: false,
+    watermarkUrl,
   });
 
   // Handle upload success
@@ -66,14 +79,24 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
             upload.successes.includes(file.name) &&
             !images.some((img) => img.name === file.name)
         )
-        .map((file: { name: string }) => ({
-          url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${folder}/${file.name}`,
-          name: file.name,
-        }));
+        .map((file: { name: string; url?: string }) => {
+          // Construct public URL if missing
+          let url = file.url;
+          if (!url || url === "") {
+            url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${folder}/${file.name}`;
+          }
+          return {
+            url,
+            name: file.name,
+          };
+        });
       if (newImages.length > 0) {
-        const updated = [...images, ...newImages];
-        setImages(updated);
-        onChange?.(updated);
+        setImages((prev) => [...prev, ...newImages]);
+        onChange?.([...images, ...newImages]);
+        // Call upload success callback with the new image URL (for watermark, only one image)
+        if (isWatermark && onUploadSuccess) {
+          onUploadSuccess(newImages[0].url);
+        }
       }
       // Clear all upload hook state to allow new uploads
       upload.setFiles([]);
@@ -81,7 +104,6 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
       upload.setSuccesses([]);
       setDropzoneKey((prev) => prev + 1);
     }
-    // eslint-disable-next-line
   }, [upload.isSuccess, upload.successes]);
 
   // Handle alt text change
@@ -126,6 +148,10 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
     const updated = images.filter((_, i) => i !== idx);
     setImages(updated);
     onChange?.(updated);
+    // Call delete success callback (for watermark)
+    if (isWatermark && onDeleteSuccess) {
+      onDeleteSuccess();
+    }
 
     // Clear all upload hook state in the correct order
     upload.setFiles([]);
@@ -207,7 +233,7 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = ({
       </div>
       {/* Dropzone for new uploads - use Supabase UI blocks */}
       <div className="mb-2 w-full max-w-xl">
-        <Dropzone key={dropzoneKey} {...upload}>
+        <Dropzone key={dropzoneKey} {...upload} isWatermark={isWatermark}>
           <DropzoneEmptyState />
           <DropzoneContent />
         </Dropzone>

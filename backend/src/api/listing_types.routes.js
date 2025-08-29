@@ -1,3 +1,7 @@
+const express = require('express');
+const router = express.Router();
+const listingTypeController = require('../controllers/listing_type.controller');
+
 /**
  * @swagger
  * tags:
@@ -34,9 +38,6 @@
  *                       id: Vila
  *                       es: Villa
  */
-const express = require('express');
-const router = express.Router();
-const listingTypeController = require('../controllers/listing_type.controller');
 
 /**
  * @swagger

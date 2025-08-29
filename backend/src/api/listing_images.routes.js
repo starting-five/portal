@@ -1,5 +1,5 @@
-import express from "express";
-import listingImageController from "../controllers/listing_image.controller";
+const express = require("express");
+const listingImageController = require("../controllers/listing_image.controller");
 const router = express.Router();
 
 /**
@@ -184,4 +184,4 @@ router.put("/:id", listingImageController.updateListingImage);
 // DELETE /api/v1/listing_images/:id - Delete a listing image
 router.delete("/:id", listingImageController.deleteListingImage);
 
-export default router;
+module.exports = router;

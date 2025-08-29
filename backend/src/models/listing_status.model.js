@@ -1,3 +1,5 @@
+const { pool } = require("../db");
+
 /**
  * Finds a single listing status by its ID and language (with fallback to English).
  * @param {number} id The ID of the listing status to find.
@@ -18,7 +20,6 @@ const findById = async (id, lang = "en") => {
   );
   return rows[0];
 };
-const { pool } = require("../db");
 
 /**
  * Finds all listing statuses with all translations.

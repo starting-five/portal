@@ -1,4 +1,29 @@
 {
+    "AccountButton": {
+        "account": "Cuenta"
+    },
+    "AccountForm": {
+        "account_settings": "Configuración de cuenta",
+        "email": {
+            "label": "Correo electrónico",
+            "placeholder": "Tu correo electrónico"
+        },
+        "name": {
+            "label": "Nombre",
+            "placeholder": "Tu nombre"
+        },
+        "phone": {
+            "label": "Número de teléfono",
+            "placeholder": "Tu número de teléfono"
+        },
+        "save_changes": "Guardar cambios",
+        "watermark_label": "Imagen de marca de agua (solo PNG)"
+    },
+    "AccountFormWrapper": {
+        "profile_updated": "¡Perfil actualizado!",
+        "update_failed": "No se pudo actualizar el perfil: {error}",
+        "no_access_token": "No se encontró el token de acceso. Por favor, inicia sesión nuevamente."
+    },
     "AuthForm": {
         "buttons": {
             "login": "Iniciar sesión",
@@ -75,6 +100,7 @@
         "file_too_large": "El archivo es más grande que {max} (Tamaño: {size})",
         "max_file_size": "Tamaño máximo de archivo: {size}",
         "max_files_error": "Solo puede subir hasta {maxFiles} archivos, elimine {removeCount} archivo{pluralSuffix}.",
+        "optimized_for_web": "Las imágenes se optimizan automáticamente para su visualización en la web",
         "select_label": "seleccione {count, plural, one {archivo} other {archivos}}",
         "successfully_uploaded": "Archivo(s) subido(s) correctamente: {count}",
         "successfully_uploaded_file": "Archivo subido correctamente",
@@ -82,7 +108,9 @@
         "upload_files": "Subir archivos",
         "upload_label": "Subir {maxFiles, plural, one {archivo} other {{maxFiles} archivos}}",
         "uploading": "Subiendo...",
-        "uploading_file": "Subiendo archivo..."
+        "uploading_file": "Subiendo archivo...",
+        "watermark_png_limit": "Solo formato PNG, tamaño máximo de archivo 2MB",
+        "watermark_usage": "Esta imagen se usará como marca de agua en tus anuncios"
     },
     "Features": {
         "beachfront": "Frente a la playa",

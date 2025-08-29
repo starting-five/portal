@@ -33,7 +33,9 @@ export const formatBytes = (
 type DropzoneContextType = Omit<
   UseSupabaseUploadReturn,
   "getRootProps" | "getInputProps"
->;
+> & {
+  isWatermark?: boolean;
+};
 
 const DropzoneContext = createContext<DropzoneContextType | undefined>(
   undefined
@@ -41,6 +43,7 @@ const DropzoneContext = createContext<DropzoneContextType | undefined>(
 
 type DropzoneProps = UseSupabaseUploadReturn & {
   className?: string;
+  isWatermark?: boolean;
 };
 
 const Dropzone = ({
@@ -48,6 +51,7 @@ const Dropzone = ({
   children,
   getRootProps,
   getInputProps,
+  isWatermark = false,
   ...restProps
 }: PropsWithChildren<DropzoneProps>) => {
   const isSuccess = restProps.isSuccess;
@@ -58,7 +62,7 @@ const Dropzone = ({
     restProps.files.some((file) => file.errors.length !== 0);
 
   return (
-    <DropzoneContext.Provider value={{ ...restProps }}>
+    <DropzoneContext.Provider value={{ ...restProps, isWatermark }}>
       <div
         {...getRootProps({
           className: cn(
@@ -222,12 +226,8 @@ const DropzoneContent = ({ className }: { className?: string }) => {
 
 const DropzoneEmptyState = ({ className }: { className?: string }) => {
   const t = useTranslations("Dropzone");
-  const { maxFiles, maxFileSize, inputRef, isSuccess } = useDropzoneContext();
-
-  if (isSuccess) {
-    return null;
-  }
-
+  const { maxFiles, maxFileSize, inputRef, isSuccess, isWatermark } =
+    useDropzoneContext();
   return (
     <div className={cn("flex flex-col items-center gap-y-2", className)}>
       <Upload size={20} className="text-muted-foreground" />
@@ -243,7 +243,21 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
           </a>{" "}
           {t("to_upload")}
         </p>
-        {maxFileSize !== Number.POSITIVE_INFINITY && (
+        {isWatermark ? (
+          <>
+            <p className="text-xs text-muted-foreground">
+              {t("watermark_usage")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("watermark_png_limit")}
+            </p>
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {t("optimized_for_web")}
+          </p>
+        )}
+        {!isWatermark && maxFileSize !== Number.POSITIVE_INFINITY && (
           <p className="text-xs text-muted-foreground">
             {t("max_file_size", { size: formatBytes(maxFileSize, 2) })}
           </p>

@@ -33,7 +33,9 @@ export default async function DashboardLayout({
           </div>
         </header>
         <main className="flex-1 flex items-center justify-center min-h-screen">
-          {children}
+          <main className="flex-1 flex items-center justify-center min-h-screen">
+            {children}
+          </main>
         </main>
       </SidebarInset>
     </SidebarProvider>

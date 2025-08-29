@@ -7,6 +7,7 @@ export interface AuthUser {
   role?: string;
   phone?: string;
   avatar_url?: string;
+  watermark_url?: string | null;
 }
 
 interface AuthUserState {

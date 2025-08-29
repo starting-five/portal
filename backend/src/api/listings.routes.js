@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const express = require("express");
 const listingsController = require("../controllers/listings.controller");
 const { requireUser } = require("../middleware/auth");

@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    }
+  }
 };
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');

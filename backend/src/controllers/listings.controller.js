@@ -71,7 +71,7 @@ const createListing = async (req, res) => {
     // console.log("📋 Bathrooms:", req.body.bathrooms, "Type:", typeof req.body.bathrooms);
     
     // Only use supported fields for creating a listing
-    const { currency, ...rest } = req.body;
+    const { ...rest } = req.body;
     
     // Clean optional number fields - convert 0, null, empty string to undefined
     const cleanOptionalNumber = (value) => {
@@ -137,7 +137,7 @@ const updateListing = async (req, res) => {
 
     // Only use supported fields for updating a listing
     // Remove unsupported fields from req.body
-    const { currency, currency_id, price_unit, ...rest } = req.body;
+    const { ...rest } = req.body;
     
     // Clean optional number fields - convert 0, null, empty string to undefined
     const cleanOptionalNumber = (value) => {
@@ -191,7 +191,7 @@ const deleteListing = async (req, res) => {
       return res.status(403).json({ message: "You can only delete your own listings" });
     }
 
-    const deletedCount = await Listing.removeByPublicId(listing_id);
+    await Listing.removeByPublicId(listing_id);
     res.status(204).send(); // 204 No Content is standard for a successful deletion
   } catch (error) {
     console.error("Error deleting listing:", error.stack);

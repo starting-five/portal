@@ -104,6 +104,7 @@ module.exports = {
   getAllListingTypes,
   getListingTypeById,
   createListingType,
+  updateListingType,
   deleteListingType,
   /**
    * Updates the translated name for a listing type.

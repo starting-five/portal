@@ -1,3 +1,8 @@
+const express = require('express');
+const router = express.Router();
+const ownershipTypeController = require('../controllers/ownership_type.controller');
+const ownershipTypeTranslationController = require('../controllers/ownership_type_translation.controller');
+
 /**
  * @swagger
  * tags:
@@ -62,12 +67,6 @@
  *                       id: Hak Milik
  *                       es: Propiedad absoluta
  */
-const express = require('express');
-const router = express.Router();
-const ownershipTypeController = require('../controllers/ownership_type.controller');
-const ownershipTypeTranslationController = require('../controllers/ownership_type_translation.controller');
-
-// ...existing code...
 
 /**
  * @swagger

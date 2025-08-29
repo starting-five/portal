@@ -1,4 +1,29 @@
 {
+    "AccountButton": {
+        "account": "Akun"
+    },
+    "AccountForm": {
+        "account_settings": "Pengaturan Akun",
+        "email": {
+            "label": "Email",
+            "placeholder": "nama@perusahaan.com"
+        },
+        "name": {
+            "label": "Nama",
+            "placeholder": "Nama Anda"
+        },
+        "phone": {
+            "label": "Nomor Telepon",
+            "placeholder": "Nomor telepon Anda"
+        },
+        "save_changes": "Simpan Perubahan",
+        "watermark_label": "Gambar Watermark (hanya PNG)"
+    },
+    "AccountFormWrapper": {
+        "profile_updated": "Profil berhasil diperbarui!",
+        "update_failed": "Gagal memperbarui profil: {error}",
+        "no_access_token": "Token akses tidak ditemukan. Silakan login kembali."
+    },
     "AuthForm": {
         "buttons": {
             "login": "Masuk",
@@ -19,7 +44,7 @@
         "fields": {
             "email": {
                 "label": "Email",
-                "placeholder": "anda@contoh.com"
+                "placeholder": "nama@perusahaan.com"
             },
             "password": {
                 "hide": "Sembunyikan kata sandi",
@@ -75,6 +100,7 @@
         "file_too_large": "File lebih besar dari {max} (Ukuran: {size})",
         "max_file_size": "Ukuran file maksimum: {size}",
         "max_files_error": "Anda hanya dapat mengunggah hingga {maxFiles} file, silakan hapus {removeCount} file{pluralSuffix}.",
+        "optimized_for_web": "Foto secara otomatis dioptimalkan untuk tampilan web",
         "select_label": "pilih {count, plural, one {file} other {file}}",
         "successfully_uploaded": "Berhasil mengunggah {count} file{count, plural, one {} other {s}}",
         "successfully_uploaded_file": "Berhasil mengunggah file",
@@ -82,7 +108,9 @@
         "upload_files": "Unggah file",
         "upload_label": "Unggah {maxFiles, plural, one {file} other {{maxFiles} file}}",
         "uploading": "Sedang mengunggah...",
-        "uploading_file": "Sedang mengunggah file..."
+        "uploading_file": "Sedang mengunggah file...",
+        "watermark_png_limit": "Format PNG saja, ukuran maksimum file 2MB",
+        "watermark_usage": "Gambar ini akan digunakan sebagai watermark pada listing Anda"
     },
     "Features": {
         "beachfront": "Tepi Pantai",

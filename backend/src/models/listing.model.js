@@ -1,4 +1,4 @@
-const db = require("../db");
+const db = require("../db/index.js");
 
 /**
  * Finds all listings and aggregates their related data (prices, images, features).
@@ -61,7 +61,7 @@ const findByPublicId = async (id) => {
  * @returns {Promise<Object>} A promise that resolves to the newly created listing object.
  */
 const create = async (listingData) => {
-  const { images, features, translations, ...listing } = listingData;
+  const { features, translations, ...listing } = listingData;
   const client = await db.pool.connect();
 
   try {
@@ -121,11 +121,6 @@ const create = async (listingData) => {
         );
       }
     }
-
-    // Insert images... (logic for images would go here)
-    // if (images && images.length > 0) {
-    //   ...
-    // }
 
     // Link features
     if (features && features.length > 0) {

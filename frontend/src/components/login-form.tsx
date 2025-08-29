@@ -14,6 +14,7 @@ import { useCreateUser } from "@/hooks/useCreateUser";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { setAuthUser } from "@/store/authUserSlice";
+import { getUserById } from "@/lib/api/users";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -93,17 +94,30 @@ export function LoginForm({
           throw userCreationError;
         }
 
-        // Dispatch Redux action to set user state
-        dispatch(
-          setAuthUser({
-            id: data.user.id,
-            email: data.user.email || "",
-            name: data.user.user_metadata?.name || "",
-            role: "user",
-            phone: data.user.phone || "",
-            avatar_url: data.user.user_metadata?.avatar_url || "",
-          })
-        );
+        // Fetch full user info from backend and update Redux state
+        try {
+          const accessToken = data.session?.access_token;
+          const userId = data.user.id;
+          if (accessToken && userId) {
+            const fullUser = await getUserById(userId, accessToken);
+            dispatch(setAuthUser(fullUser));
+          } else {
+            // Fallback to Supabase user info if backend fetch fails
+            dispatch(
+              setAuthUser({
+                id: data.user.id,
+                email: data.user.email || "",
+                name: data.user.user_metadata?.name || "",
+                role: "user",
+                phone: data.user.phone || "",
+                avatar_url: data.user.user_metadata?.avatar_url || "",
+                watermark_url: null,
+              })
+            );
+          }
+        } catch (fetchError) {
+          console.error("Failed to fetch full user info:", fetchError);
+        }
       }
 
       router.push("/dashboard");

@@ -1,3 +1,4 @@
+import { convertImageToWebPBackend } from "@/lib/api/imageConversion";
 import { createClient } from "@/lib/supabase/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -52,6 +53,14 @@ type UseSupabaseUploadOptions = {
    * When set to false, an error is thrown if the object already exists. Defaults to `false`
    */
   upsert?: boolean;
+  /**
+   * If true, skip conversion to WebP (used for watermark uploads)
+   */
+  isWatermark?: boolean;
+  /**
+   * Optional watermark image URL to send to backend for conversion
+   */
+  watermarkUrl?: string;
 };
 
 type UseSupabaseUploadReturn = ReturnType<typeof useSupabaseUpload>;
@@ -65,6 +74,8 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     maxFiles = 1,
     cacheControl = 3600,
     upsert = false,
+    isWatermark = false,
+    watermarkUrl,
   } = options;
 
   const [files, setFiles] = useState<FileWithPreview[]>([]);
@@ -120,8 +131,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const onUpload = useCallback(async () => {
     setLoading(true);
 
-    // [Joshen] This is to support handling partial successes
-    // If any files didn't upload for any reason, hitting "Upload" again will only upload the files that had errors
+    // Only upload files that haven't succeeded or had errors
     const filesWithErrors = errors.map((x) => x.name);
     const filesToUpload =
       filesWithErrors.length > 0
@@ -131,24 +141,73 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
           ]
         : files;
 
+    let validConvertedFiles;
+    const watermarkUrlForUpload = watermarkUrl; // Explicitly capture for closure
+    if (isWatermark) {
+      // For watermark, skip conversion, upload original files
+      validConvertedFiles = filesToUpload.map((file) => ({ file, orig: file }));
+    } else {
+      // Convert all files to WebP using backend API before uploading
+      const convertedFiles = await Promise.all(
+        filesToUpload.map(async (file) => {
+          try {
+            const { blob, filename } = await convertImageToWebPBackend(
+              file,
+              watermarkUrlForUpload
+            );
+            // Use the filename returned from the backend
+            return new File([blob], filename, { type: "image/webp" });
+          } catch (err) {
+            setErrors((prev) => [
+              ...prev,
+              { name: file.name, message: "Conversion failed" },
+            ]);
+            return null;
+          }
+        })
+      );
+      // Filter out any nulls (conversion failures)
+      validConvertedFiles = convertedFiles
+        .map((file, idx) => ({ file, orig: filesToUpload[idx] }))
+        .filter(({ file }) => file !== null);
+    }
+
     const responses = await Promise.all(
-      filesToUpload.map(async (file) => {
+      validConvertedFiles.map(async ({ file, orig }) => {
         const { error } = await supabase.storage
           .from(bucketName)
-          .upload(!!path ? `${path}/${file.name}` : file.name, file, {
+          .upload(!!path ? `${path}/${file!.name}` : file!.name, file!, {
             cacheControl: cacheControl.toString(),
-            upsert,
+            upsert: true,
           });
         if (error) {
-          return { name: file.name, message: error.message };
+          return { name: file!.name, message: error.message };
         } else {
-          return { name: file.name, message: undefined };
+          return { name: file!.name, message: undefined, file };
         }
       })
     );
 
+    // Update local state to reference converted files for thumbnails
+    const uploadedFiles = responses
+      .filter((x) => x.message === undefined && x.file)
+      .map((x) => x.file as FileWithPreview);
+    setFiles((prevFiles) => {
+      // Remove originals that were converted, add converted files
+      const convertedNames = filesToUpload.map((f) => f.name);
+      const filtered = prevFiles.filter(
+        (f) => !convertedNames.includes(f.name)
+      );
+      // Add preview URLs to converted files
+      const convertedWithPreview = uploadedFiles.map((file) => {
+        (file as FileWithPreview).preview = URL.createObjectURL(file);
+        (file as FileWithPreview).errors = [];
+        return file as FileWithPreview;
+      });
+      return [...filtered, ...convertedWithPreview];
+    });
+
     const responseErrors = responses.filter((x) => x.message !== undefined);
-    // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
     setErrors(responseErrors);
 
     const responseSuccesses = responses.filter((x) => x.message === undefined);
@@ -201,5 +260,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 export {
   useSupabaseUpload,
   type UseSupabaseUploadOptions,
-  type UseSupabaseUploadReturn,
+  type UseSupabaseUploadReturn
 };
+

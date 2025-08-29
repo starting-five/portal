@@ -26,13 +26,12 @@ export function LogoutButton() {
   };
 
   return (
-    <Button
-      variant="ghost"
-      className="w-full justify-start gap-2"
+    <div
+      className="flex items-center gap-2 cursor-pointer hover:bg-gray-100"
       onClick={handleLogout}
     >
       <LogOut className="size-4" />
       {t("logout")}
-    </Button>
+    </div>
   );
 }

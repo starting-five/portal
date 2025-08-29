@@ -93,9 +93,6 @@ const seedDatabase = async () => {
         ]
       }
     ];
-    const ownershipTypes = ['freehold', 'leasehold'];
-    const listingStatuses = ['draft', 'available_for_sale', 'available_for_rent', 'off_plan', 'sold', 'rented', 'unavailable'];
-    // Removed priceUnits and related seeding
 
     // Insert listing types and translations
     const listingTypesMap = {};

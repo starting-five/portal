@@ -48,31 +48,6 @@ const findById = async (id) => {
 };
 
 /**
- * Creates a new ownership type.
- * @param {Object} typeData The data for the new type (name).
- * @returns {Promise<Object>} A promise that resolves to the newly created ownership type object.
- */
-const create = async ({ name }) => {
-  // Only insert with key/code, not name
-  throw new Error(
-    "Direct creation of ownership types is not supported. Use seed or admin logic."
-  );
-};
-
-/**
- * Updates an existing ownership type.
- * @param {number} id The ID of the ownership type to update.
- * @param {Object} typeData The new data for the type (name).
- * @returns {Promise<Object|undefined>} A promise that resolves to the updated ownership type object, or undefined if not found.
- */
-const update = async (id, { name }) => {
-  // Only update key/code, not name
-  throw new Error(
-    "Direct update of ownership types is not supported. Use seed or admin logic."
-  );
-};
-
-/**
  * Deletes an ownership type.
  * @param {number} id The ID of the ownership type to delete.
  * @returns {Promise<number>} A promise that resolves to the number of deleted rows (1 or 0).

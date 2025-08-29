@@ -1,4 +1,29 @@
 {
+    "AccountButton": {
+        "account": "Account"
+    },
+    "AccountForm": {
+        "account_settings": "Account Settings",
+        "email": {
+            "label": "Email",
+            "placeholder": "Your email"
+        },
+        "name": {
+            "label": "Name",
+            "placeholder": "Your name"
+        },
+        "phone": {
+            "label": "Phone Number",
+            "placeholder": "Your phone number"
+        },
+        "save_changes": "Save Changes",
+        "watermark_label": "Watermark Image (PNG only)"
+    },
+    "AccountFormWrapper": {
+        "profile_updated": "Profile updated!",
+        "update_failed": "Failed to update profile: {error}",
+        "no_access_token": "No access token found. Please log in again."
+    },
     "AuthForm": {
         "buttons": {
             "login": "Login",
@@ -75,6 +100,7 @@
         "file_too_large": "File is larger than {max} (Size: {size})",
         "max_file_size": "Maximum file size: {size}",
         "max_files_error": "You may upload only up to {maxFiles} files, please remove {removeCount} file{pluralSuffix}.",
+        "optimized_for_web": "Images are automatically optimized for web display",
         "select_label": "select {count, plural, one {file} other {files}}",
         "successfully_uploaded": "Successfully uploaded {count} file{count, plural, one {} other {s}}",
         "successfully_uploaded_file": "Successfully uploaded file",
@@ -82,7 +108,9 @@
         "upload_files": "Upload files",
         "upload_label": "Upload {maxFiles, plural, one {file} other {{maxFiles} files}}",
         "uploading": "Uploading...",
-        "uploading_file": "Uploading file..."
+        "uploading_file": "Uploading file...",
+        "watermark_png_limit": "PNG format only, maximum file size 2MB",
+        "watermark_usage": "This image will be used as a watermark on your listings"
     },
     "Features": {
         "beachfront": "Beachfront",
