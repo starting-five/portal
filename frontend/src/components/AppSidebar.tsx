@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import type { RootState } from "@/store/store";
 import { Home, List } from "lucide-react";
@@ -34,6 +35,20 @@ export function AppSidebar({ locale }: { locale: string }) {
       title: t("my_listings"),
       url: `/${locale}/dashboard/listings`,
       icon: List,
+      items: [
+        {
+          title: t("drafts"),
+          url: `/${locale}/dashboard/listings/drafts`,
+        },
+        {
+          title: t("active"),
+          url: `/${locale}/dashboard/listings/active`,
+        },
+        {
+          title: t("archive"),
+          url: `/${locale}/dashboard/listings/archive`,
+        },
+      ],
     },
   ];
 
@@ -57,10 +72,23 @@ export function AppSidebar({ locale }: { locale: string }) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <Link href={item.url}>
-                        <item.icon />
+                        {item.icon && <item.icon />}
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.items?.length ? (
+                      <SidebarMenuSub>
+                        {item.items.map((subItem) => (
+                          <SidebarMenuItem key={subItem.title}>
+                            <SidebarMenuButton asChild>
+                              <Link href={subItem.url}>
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenuSub>
+                    ) : null}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

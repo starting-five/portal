@@ -1,6 +1,6 @@
-import { getRequestConfig } from "next-intl/server";
+import { DEFAULT_LOCALE, LOCALE_CODES } from "@/i18n/locales";
 import { hasLocale } from "next-intl";
-import { LOCALE_CODES, DEFAULT_LOCALE } from "@/i18n/locales";
+import { getRequestConfig } from "next-intl/server";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Typically corresponds to the `[locale]` segment
@@ -12,6 +12,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default,
-    timeZone: "UTC", // <--- Add this line for a global default
+    timeZone: "UTC", // Global default timezone
+    now: new Date(), // Provide consistent time for SSR/CSR
   };
 });

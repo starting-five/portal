@@ -20,9 +20,9 @@
         "watermark_label": "Watermark Image (PNG only)"
     },
     "AccountFormWrapper": {
+        "no_access_token": "No access token found. Please log in again.",
         "profile_updated": "Profile updated!",
-        "update_failed": "Failed to update profile: {error}",
-        "no_access_token": "No access token found. Please log in again."
+        "update_failed": "Failed to update profile: {error}"
     },
     "AuthForm": {
         "buttons": {
@@ -94,6 +94,12 @@
             "title": "Set a New Password"
         }
     },
+    "Dashboard": {
+        "defaultName": "Agent",
+        "editProfile": "Edit Profile",
+        "noEmail": "No email available",
+        "profileTitle": "Your Profile"
+    },
     "Dropzone": {
         "drag_drop_or_select": "Drag and drop or",
         "failed_to_upload": "Failed to upload: {error}",
@@ -124,6 +130,28 @@
         "resort": "Resort",
         "rice_view": "Rice View",
         "sunset_view": "Sunset View"
+    },
+    "FiltersBar": {
+        "advancedFilter": "Filters",
+        "advancedPropertyFilters": "Advanced Property Filters",
+        "applyFilters": "Apply Filters",
+        "basicFilters": "Basic Filters",
+        "bathrooms": "Bathrooms",
+        "bedrooms": "Bedrooms",
+        "bedsBaths": "Beds & Baths",
+        "cancel": "Cancel",
+        "clearAllFilters": "Clear All Filters",
+        "featuresAmenities": "Features & Amenities",
+        "listingStatus": "Listing Status",
+        "location": "Location",
+        "maxPrice": "Max Price",
+        "minPrice": "Min Price",
+        "noLocations": "No locations found.",
+        "ownershipType": "Ownership Type",
+        "priceRange": "Price Range",
+        "propertyType": "Property Type",
+        "search": "Search",
+        "searchLocations": "Search locations..."
     },
     "HomePage": {
         "description": "This is the home page where you can find the latest updates and features.",
@@ -190,8 +218,17 @@
         "title": "Property Portal"
     },
     "MyListings": {
+        "active_description": "These are your active property listings. You can edit, archive, or manage them from here.",
+        "active_empty": "You have no active listings.",
+        "active_title": "Active Listings",
         "add_listing": "Add Listing",
+        "archive_description": "These are your archived property listings. You can restore or permanently delete them from here.",
+        "archive_empty": "You have no archived listings.",
+        "archive_title": "Archived Listings",
         "description": "View and manage my property listings",
+        "drafts_description": "These are your draft property listings. You can continue editing and publish them when ready.",
+        "drafts_empty": "You have no draft listings.",
+        "drafts_title": "Draft Listings",
         "empty_message": "You have no listings yet. Start by adding your first property!",
         "error": "Failed to load listings. Please try again later.",
         "title": "My Listings"
@@ -206,6 +243,9 @@
         "no_photos_available": "No photos available"
     },
     "Sidebar": {
+        "active": "Active Listings",
+        "archive": "Archive",
+        "drafts": "Drafts",
         "home": "Home",
         "my_listings": "My Listings",
         "new_listing": "New Listing",

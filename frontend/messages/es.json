@@ -20,9 +20,9 @@
         "watermark_label": "Imagen de marca de agua (solo PNG)"
     },
     "AccountFormWrapper": {
+        "no_access_token": "No se encontró el token de acceso. Por favor, inicia sesión nuevamente.",
         "profile_updated": "¡Perfil actualizado!",
-        "update_failed": "No se pudo actualizar el perfil: {error}",
-        "no_access_token": "No se encontró el token de acceso. Por favor, inicia sesión nuevamente."
+        "update_failed": "No se pudo actualizar el perfil: {error}"
     },
     "AuthForm": {
         "buttons": {
@@ -94,6 +94,12 @@
             "title": "Establece una nueva contraseña"
         }
     },
+    "Dashboard": {
+        "defaultName": "Agente",
+        "editProfile": "Editar Perfil",
+        "noEmail": "No hay correo electrónico",
+        "profileTitle": "Tu Perfil"
+    },
     "Dropzone": {
         "drag_drop_or_select": "Arrastre y suelte o",
         "failed_to_upload": "Error al subir: {error}",
@@ -124,6 +130,28 @@
         "resort": "Resort",
         "rice_view": "Vista al arrozal",
         "sunset_view": "Vista al atardecer"
+    },
+    "FiltersBar": {
+        "advancedFilter": "Filtros",
+        "advancedPropertyFilters": "Filtros avanzados de propiedad",
+        "applyFilters": "Aplicar filtros",
+        "basicFilters": "Filtros básicos",
+        "bathrooms": "Baños",
+        "bedrooms": "Habitaciones",
+        "bedsBaths": "Habitaciones y Baños",
+        "cancel": "Cancelar",
+        "clearAllFilters": "Borrar todos los filtros",
+        "featuresAmenities": "Características y comodidades",
+        "listingStatus": "Estado del listado",
+        "location": "Ubicación",
+        "maxPrice": "Precio máximo",
+        "minPrice": "Precio mínimo",
+        "noLocations": "No se encontraron ubicaciones.",
+        "ownershipType": "Tipo de propiedad",
+        "priceRange": "Rango de Precios",
+        "propertyType": "Tipo de Propiedad",
+        "search": "Buscar",
+        "searchLocations": "Buscar ubicaciones..."
     },
     "HomePage": {
         "description": "Esta es la página de inicio donde puedes encontrar las últimas actualizaciones y características.",
@@ -190,8 +218,17 @@
         "title": "Portal de Propiedades"
     },
     "MyListings": {
+        "active_description": "Estas son tus propiedades activas. Puedes editarlas, archivarlas o gestionarlas desde aquí.",
+        "active_empty": "No tienes propiedades activas.",
+        "active_title": "Propiedades Activas",
         "add_listing": "Agregar Listado",
+        "archive_description": "Estas son tus propiedades archivadas. Puedes restaurarlas o eliminarlas permanentemente desde aquí.",
+        "archive_empty": "No tienes propiedades archivadas.",
+        "archive_title": "Propiedades Archivadas",
         "description": "Ver y gestionar mis listados de propiedades",
+        "drafts_description": "Estas son tus propiedades en borrador. Puedes seguir editando y publicarlas cuando estén listas.",
+        "drafts_empty": "No tienes propiedades en borrador.",
+        "drafts_title": "Propiedades en Borrador",
         "empty_message": "Aún no tienes listados. ¡Comienza agregando tu primera propiedad!",
         "error": "Error al cargar los listados. Por favor, inténtalo de nuevo más tarde.",
         "title": "Mis Listados"
@@ -206,6 +243,9 @@
         "no_photos_available": "No hay fotos disponibles"
     },
     "Sidebar": {
+        "active": "Publicados",
+        "archive": "Archivados",
+        "drafts": "Borradores",
         "home": "Inicio",
         "my_listings": "Mis Listados",
         "new_listing": "Nuevo Listado",

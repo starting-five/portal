@@ -8,6 +8,20 @@ import {
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 import { deleteListingImage } from "@/lib/api/listingImages";
 import { createClient } from "@/lib/supabase/client";
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Loader2, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -167,69 +181,117 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = (props) => {
     }, 100);
   };
 
+  // --- dnd-kit sortable setup ---
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  function handleDragEnd(event: any) {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      const oldIndex = images.findIndex((img) => img.url === active.id);
+      const newIndex = images.findIndex((img) => img.url === over.id);
+      const newImages = arrayMove(images, oldIndex, newIndex);
+      setImages(newImages);
+      onChange?.(newImages);
+    }
+  }
+
+  function SortableImageCard({
+    img,
+    idx,
+  }: {
+    img: SupabaseImage;
+    idx: number;
+  }) {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: img.url });
+    return (
+      <div
+        ref={setNodeRef}
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.5 : 1,
+          zIndex: isDragging ? 10 : undefined,
+        }}
+        className="relative flex flex-col items-center w-40 border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden group cursor-move"
+        {...attributes}
+        {...listeners}
+      >
+        <div className="w-full h-28 bg-slate-100 flex items-center justify-center overflow-hidden">
+          <Image
+            src={img.url}
+            alt={img.alt || img.name}
+            width={160}
+            height={112}
+            className="object-cover w-full h-full"
+            style={{ width: "auto", height: "auto" }}
+            unoptimized={false}
+          />
+        </div>
+        <div className="flex flex-col w-full px-3 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <span
+              className="truncate text-xs font-medium text-slate-700 max-w-[100px]"
+              title={img.name}
+            >
+              {img.name}
+            </span>
+            <button
+              type="button"
+              className={`text-slate-400 hover:text-red-500 ml-2 cursor-pointer ${
+                deletingIdx === idx ? "opacity-60 pointer-events-none" : ""
+              }`}
+              onClick={() => handleDelete(idx)}
+              title={t("delete_image_tooltip")}
+              disabled={deletingIdx === idx}
+            >
+              {deletingIdx === idx ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Trash2 size={16} />
+              )}
+            </button>
+          </div>
+          <span className="text-xs text-slate-400">
+            {(() => {
+              const uploaded = upload.files.find(
+                (f: { name: string; size?: number }) => f.name === img.name
+              );
+              return uploaded && uploaded.size
+                ? `${Math.round(uploaded.size / 1024 / 1024)} MB`
+                : "";
+            })()}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-4">
-        <div className="flex flex-wrap gap-4">
-          {images.map((img, idx) => (
-            <div
-              key={img.url}
-              className="relative flex flex-col items-center w-40 border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden group"
-            >
-              <div className="w-full h-28 bg-slate-100 flex items-center justify-center overflow-hidden">
-                <Image
-                  src={img.url}
-                  alt={img.alt || img.name}
-                  width={160}
-                  height={112}
-                  className="object-cover w-full h-full"
-                  style={{ width: "auto", height: "auto" }}
-                  unoptimized={false}
-                />
-              </div>
-              <div className="flex flex-col w-full px-3 py-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className="truncate text-xs font-medium text-slate-700 max-w-[100px]"
-                    title={img.name}
-                  >
-                    {img.name}
-                  </span>
-                  <button
-                    type="button"
-                    className={`text-slate-400 hover:text-red-500 ml-2 cursor-pointer ${
-                      deletingIdx === idx
-                        ? "opacity-60 pointer-events-none"
-                        : ""
-                    }`}
-                    onClick={() => handleDelete(idx)}
-                    title={t("delete_image_tooltip")}
-                    disabled={deletingIdx === idx}
-                  >
-                    {deletingIdx === idx ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Trash2 size={16} />
-                    )}
-                  </button>
-                </div>
-                {/* Alt text field removed as requested */}
-                <span className="text-xs text-slate-400">
-                  {/* Show file size if available (from upload.files), else blank */}
-                  {(() => {
-                    const uploaded = upload.files.find(
-                      (f: { name: string; size?: number }) =>
-                        f.name === img.name
-                    );
-                    return uploaded && uploaded.size
-                      ? `${Math.round(uploaded.size / 1024 / 1024)} MB`
-                      : "";
-                  })()}
-                </span>
-              </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={images.map((img) => img.url)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-5 gap-4">
+              {images.map((img, idx) => (
+                <SortableImageCard key={img.url} img={img} idx={idx} />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       </div>
       {/* Dropzone for new uploads - use Supabase UI blocks */}
       <div className="mb-2 w-full max-w-xl">

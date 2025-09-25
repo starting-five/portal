@@ -32,11 +32,7 @@ export default async function DashboardLayout({
             <LocaleSwitcher currentLocale={locale} />
           </div>
         </header>
-        <main className="flex-1 flex items-center justify-center min-h-screen">
-          <main className="flex-1 flex items-center justify-center min-h-screen">
-            {children}
-          </main>
-        </main>
+        <main className="flex-1 min-h-screen">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

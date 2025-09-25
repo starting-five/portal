@@ -3,15 +3,48 @@ import { API_BASE } from "./apiBase";
 export async function getListings(params?: {
   lang?: string;
   user_id?: string;
+  limit?: number;
+  offset?: number;
+  locationId?: string;
+  propertyTypeId?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  ownershipTypeId?: string;
+  listingStatusId?: string;
+  featuresId?: string;
 }) {
   const queryParams = [];
   if (params?.lang) queryParams.push(`lang=${params.lang}`);
   if (params?.user_id) queryParams.push(`user_id=${params.user_id}`);
+  if (params?.limit) queryParams.push(`limit=${params.limit}`);
+  if (params?.offset !== undefined) queryParams.push(`offset=${params.offset}`);
+  if (params?.locationId) queryParams.push(`locationId=${params.locationId}`);
+  if (params?.propertyTypeId)
+    queryParams.push(`propertyTypeId=${params.propertyTypeId}`);
+  if (params?.bedrooms !== undefined)
+    queryParams.push(`bedrooms=${params.bedrooms}`);
+  if (params?.bathrooms !== undefined)
+    queryParams.push(`bathrooms=${params.bathrooms}`);
+  if (params?.minPrice !== undefined)
+    queryParams.push(`minPrice=${params.minPrice}`);
+  if (params?.maxPrice !== undefined)
+    queryParams.push(`maxPrice=${params.maxPrice}`);
+  if (params?.ownershipTypeId !== undefined)
+    queryParams.push(`ownershipTypeId=${params.ownershipTypeId}`);
+  if (params?.listingStatusId !== undefined)
+    queryParams.push(`listingStatusId=${params.listingStatusId}`);
+  if (params?.featuresId !== undefined)
+    queryParams.push(`featuresId=${params.featuresId}`);
   const query = queryParams.length ? `?${queryParams.join("&")}` : "";
   const res = await fetch(`${API_BASE}/listings${query}`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
   });
-  if (!res.ok) throw new Error("Failed to fetch listings");
+  if (!res.ok) {
+    console.error(res.status, res.statusText);
+    throw new Error("Failed to fetch listings");
+  }
   return res.json();
 }
 

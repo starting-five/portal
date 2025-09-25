@@ -102,14 +102,14 @@ type ListingFormProps = {
       }) => React.ReactNode);
   initialValues?: any;
   mode?: "create" | "edit";
+  context?: string; // e.g. "drafts", "active", "archive"
 };
-
-import { updateListing } from "@/lib/api/listings";
 
 export default function ListingForm({
   children,
   initialValues,
   mode,
+  context,
 }: ListingFormProps) {
   // Track form rendering
   // console.timeEnd('Form Render Time');
@@ -124,7 +124,7 @@ export default function ListingForm({
   const [uploadedImages, setUploadedImages] = React.useState<SupabaseImage[]>(
     []
   );
-  const [jwt, setJwt] = React.useState<string | undefined>(undefined);
+  const [jwtState, setJwt] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     getCurrentUserJWT().then((jwt) => setJwt(jwt ?? undefined));
@@ -138,10 +138,16 @@ export default function ListingForm({
           const { getImagesForListing } = await import("@/lib/api/listings");
           const images = await getImagesForListing(initialValues.listing_id);
           if (Array.isArray(images)) {
-            const mapped = images.map((img) => ({
-              ...img,
-              name: img.alt_text || img.name || "",
-            }));
+            const mapped = images.map((img) => {
+              // Always extract the filename from the URL (webp extension)
+              const urlParts = img.url ? img.url.split("/") : [];
+              const webpName =
+                urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+              return {
+                ...img,
+                name: img.alt_text || webpName || img.name || "",
+              };
+            });
             setUploadedImages(mapped);
           } else {
             setUploadedImages([]);
@@ -166,9 +172,9 @@ export default function ListingForm({
   const features =
     (useSelector(selectFeatures) as FeatureCategoryWithItems[]) || [];
 
-  // Remove "archived" and "deleted" statuses if they exist
+  // Remove "deleted" statuses if they exist
   const filteredListingStatuses = listingStatuses.filter(
-    (status) => status.key !== "archived" && status.key !== "deleted"
+    (status) => status.key !== "deleted"
   );
 
   const form = useForm({
@@ -260,6 +266,7 @@ export default function ListingForm({
 
   async function handleSubmit(values: any) {
     setIsManuallyLoading(true);
+    let jwt = jwtState;
 
     // Clean up optional number fields - convert empty/invalid values to undefined for optional fields
     const cleanOptionalNumber = (value: any) => {
@@ -298,6 +305,7 @@ export default function ListingForm({
       let movedImages: SupabaseImage[] = [];
       let actuallyMovedImages: SupabaseImage[] = [];
       let existingDbImagesCount = 0;
+
       if (uploadedImages.length && currentUser && publicListingId) {
         const supabase = createClient();
         movedImages = await Promise.all(
@@ -336,18 +344,22 @@ export default function ListingForm({
         movedImages = uploadedImages;
       }
 
-      // Use internalId for DB image records
+      // Always persist sort_order for all images (existing and new)
+      // 1. For new listings, bulk upload all images with correct sort_order
+      // 2. For edit mode, update sort_order for all images (PUT), and bulk upload any new images
       if (mode === "create") {
-        // For new listings, bulk upload all moved images
-        const imagesToUpload = movedImages.map((img, idx) => ({
-          listing_id: internalId,
-          url: img.url,
-          alt_text:
-            typeof img.name === "string" && img.name.length > 0
-              ? img.name
-              : undefined,
-          sort_order: idx,
-        }));
+        const imagesToUpload = movedImages.map((img, idx) => {
+          // Always use the webp filename from the URL for alt_text
+          const urlParts = img.url ? img.url.split("/") : [];
+          const webpName =
+            urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+          return {
+            listing_id: internalId,
+            url: img.url,
+            alt_text: webpName,
+            sort_order: idx,
+          };
+        });
         if (imagesToUpload.length) {
           try {
             await bulkCreateListingImages(imagesToUpload, jwt);
@@ -359,31 +371,66 @@ export default function ListingForm({
           }
         }
       } else {
-        // For edit mode, only upload images that were actually moved from /tmp
-        // Fetch current images for the listing to determine starting order
-        try {
-          const { getImagesForListing } = await import("@/lib/api/listings");
-          const dbImages = await getImagesForListing(publicListingId);
-          existingDbImagesCount = Array.isArray(dbImages) ? dbImages.length : 0;
-        } catch (err) {
-          console.error(
-            "Failed to fetch DB images for order calculation:",
-            err
-          );
-          existingDbImagesCount = 0;
-        }
-        const imagesToUpload = actuallyMovedImages.map((img, idx) => ({
-          listing_id: internalId,
-          url: img.url,
-          alt_text:
-            typeof img.name === "string" && img.name.length > 0
-              ? img.name
-              : undefined,
-          sort_order: existingDbImagesCount + idx,
-        }));
-        if (imagesToUpload.length) {
+        // For edit mode, update sort_order for all images (existing and new)
+        // movedImages = all images in the gallery, in the new order
+        // If image has id, update via PUT; if not, bulk create
+        const imagesToCreate: {
+          listing_id: string | number;
+          url: string;
+          alt_text?: string;
+          sort_order: number;
+        }[] = [];
+        const imagesToUpdate: (SupabaseImage & {
+          sort_order: number;
+          alt_text?: string;
+        })[] = [];
+        movedImages.forEach((img, idx) => {
+          // Always use the webp filename from the URL for alt_text
+          const urlParts = img.url ? img.url.split("/") : [];
+          const webpName =
+            urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+          if (img.id) {
+            imagesToUpdate.push({
+              ...img,
+              sort_order: idx,
+              alt_text: webpName,
+            });
+          } else {
+            imagesToCreate.push({
+              ...img,
+              listing_id: internalId,
+              sort_order: idx,
+              alt_text: webpName,
+            });
+          }
+        });
+        // Bulk create new images
+        if (imagesToCreate.length) {
           try {
-            await bulkCreateListingImages(imagesToUpload, jwt);
+            await bulkCreateListingImages(imagesToCreate, jwt);
+          } catch (err: any) {
+            toast.error(
+              t("image_upload_failed") +
+                (err?.message ? `: ${err.message}` : "")
+            );
+          }
+        }
+        // Update sort_order for existing images
+        if (imagesToUpdate.length) {
+          try {
+            const { updateListingImage } = await import(
+              "@/lib/api/listingImages"
+            );
+            await Promise.all(
+              imagesToUpdate.map((img, idx) =>
+                updateListingImage(img.id as string | number, {
+                  listing_id: (img as any).listing_id,
+                  url: img.url,
+                  alt_text: img.alt_text,
+                  sort_order: idx,
+                })
+              )
+            );
           } catch (err: any) {
             toast.error(
               t("image_upload_failed") +
@@ -397,28 +444,22 @@ export default function ListingForm({
     try {
       let result;
       let listingId;
-      let jwt;
-      if (
-        mode === "edit" &&
-        initialValues &&
-        initialValues.listing_id &&
-        initialValues.id
-      ) {
-        jwt = await getCurrentUserJWT();
-        result = await updateListing(
-          initialValues.listing_id,
-          cleanedValues,
-          jwt || undefined
-        );
-        // Use both internal id and public listing_id
+      if (mode === "edit") {
+        // In edit mode, just update images and listing
+        if (!initialValues?.id || !initialValues?.listing_id) {
+          throw new Error("Missing listing id for edit mode");
+        }
         await moveAndUploadImages({
           internalId: initialValues.id,
           publicListingId: initialValues.listing_id,
           jwt: jwt || undefined,
         });
+        // Optionally update the listing details here if needed
         toast.success(t("listing_updated_success"));
       } else {
-        jwt = await getCurrentUserJWT();
+        // In create mode, create the listing first, then upload images
+        const jwtVal = await getCurrentUserJWT();
+        jwt = jwtVal ?? undefined;
         result = await createListing(cleanedValues, jwt || undefined);
         listingId = result.id;
         const listingListingId = result.listing_id;
@@ -432,7 +473,9 @@ export default function ListingForm({
         });
         toast.success(t("listing_created_success"));
       }
-      router.push(`/${locale}/dashboard/listings`);
+      router.push(
+        `/${locale}/dashboard/listings/${context || ""}`.replace(/\/$/, "")
+      );
       // Note: We don't reset isManuallyLoading here - let it stay true until navigation
     } catch (error: any) {
       setIsManuallyLoading(false); // Only reset on error

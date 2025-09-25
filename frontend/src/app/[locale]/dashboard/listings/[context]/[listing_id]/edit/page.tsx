@@ -3,7 +3,7 @@
 import ListingForm from "@/components/ListingForm";
 import { getListing } from "@/lib/api/listings";
 import { useTranslations } from "next-intl";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ListingFormActions from "./ListingFormActions";
 
@@ -12,6 +12,8 @@ export default function EditListingPage({
 }: {
   params: Promise<{ locale: string; listing_id: string }>;
 }) {
+  const routeParams = useParams();
+  const context = routeParams?.context as string | undefined;
   const [listingId, setListingId] = useState<string | null>(null);
   const [listing, setListing] = useState<any>(null);
   const t = useTranslations("ListingForm");
@@ -53,7 +55,7 @@ export default function EditListingPage({
         </h1>
         <p className="mb-8 text-slate-600">{t("description_edit")}</p>
 
-        <ListingForm initialValues={listing} mode="edit">
+        <ListingForm initialValues={listing} mode="edit" context={context}>
           {({ isSubmitting, uploadedImages, currentUser }) => (
             <ListingFormActions
               isSubmitting={isSubmitting}

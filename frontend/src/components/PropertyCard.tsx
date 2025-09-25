@@ -37,16 +37,9 @@ import React from "react";
 
 import { deleteListing } from "@/lib/api/listings";
 import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
-import { toast } from "sonner";
-
-import {
-  useFeatureLabel,
-  useListingStatusLabel,
-  useListingTypeLabel,
-  useLocationLabel,
-  useOwnershipLabel,
-} from "@/hooks/useLookupLabels";
 import type { ListingImage } from "@/lib/types";
+import { useAppSelector } from "@/store/hooks";
+import { toast } from "sonner";
 
 // Property type definition
 export type Property = {
@@ -74,14 +67,86 @@ export type Property = {
 interface PropertyCardProps {
   property: Property;
   locale?: string;
+  context?: string; // e.g. "drafts", "active", "archive"
 }
 
-export default function PropertyCard({ property, locale }: PropertyCardProps) {
+export default function PropertyCard({
+  property,
+  locale,
+  context,
+}: PropertyCardProps) {
   const tCard = useTranslations("PropertyCard");
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isFading, setIsFading] = React.useState(false);
   const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+  const [isClient, setIsClient] = React.useState(false);
+
+  // Get lookups from Redux
+  const lookups = useAppSelector((state) => state.lookups);
+
+  // Wait for client-side hydration to complete
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Helper functions to map IDs to labels (same pattern as your working project)
+  const getLabel = <T extends { id: number; labels: Record<string, string> }>(
+    type: keyof typeof lookups,
+    id: number
+  ): string => {
+    if (
+      !lookups ||
+      !lookups[type] ||
+      !Array.isArray(lookups[type]) ||
+      lookups[type].length === 0
+    )
+      return "";
+    const arr = lookups[type] as T[];
+    const item = arr.find((i) => i.id === id);
+    return (
+      item?.labels?.[locale || "en"] ||
+      item?.labels?.en ||
+      item?.labels?.id ||
+      item?.labels?.es ||
+      ""
+    );
+  };
+
+  const getFeatureLabel = (feature: number | { id: number }): string => {
+    const id = typeof feature === "object" ? feature.id : feature;
+    if (
+      !lookups ||
+      !lookups.features_by_id ||
+      Object.keys(lookups.features_by_id).length === 0
+    )
+      return "";
+    const featureData = lookups.features_by_id[id] as
+      | { labels: Record<string, string> }
+      | undefined;
+    return (
+      featureData?.labels?.[locale || "en"] ||
+      featureData?.labels?.en ||
+      featureData?.labels?.id ||
+      featureData?.labels?.es ||
+      ""
+    );
+  };
+
+  // Helper to get location label from id
+  const getLocationLabel = (id: number): string => {
+    if (
+      !lookups ||
+      !lookups.locations ||
+      !Array.isArray(lookups.locations) ||
+      lookups.locations.length === 0
+    )
+      return "";
+    const location = (
+      lookups.locations as Array<{ id: number; name: string }>
+    ).find((l) => l.id === id);
+    return location?.name || "";
+  };
 
   // Get current user ID on mount for UI display logic only
   React.useEffect(() => {
@@ -145,37 +210,20 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
     typeof window !== "undefined" &&
     ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
-  // Lookup labels using custom hooks
-  // These hooks will fetch the necessary data from Redux store and return the localized label
-  // This avoids the need to pass ownershipTypes, listingTypes, etc. as props
-  // This is more efficient and keeps the component cleaner
-
-  const ownershipLabel = useOwnershipLabel(
-    property.ownership_type_id,
-    locale || "en"
-  );
-
-  const listingTypeLabel = useListingTypeLabel(
-    property.listing_type_id,
-    locale || "en"
-  );
-
-  const listingStatusLabel = useListingStatusLabel(
-    property.status_id,
-    locale || "en"
-  );
-
-  const location = useLocationLabel(property.location_id);
-
-  // const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-  //   // Prevent navigation if clicking edit/delete buttons
-  //   if ((e.target as HTMLElement).closest('.property-action')) return;
-  //   router.push(`/${locale || "en"}/dashboard/listings/${property.listing_id}`);
-  // };
+  // Handle card click to navigate to detail page
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent navigation if clicking edit/delete buttons
+    if ((e.target as HTMLElement).closest(".property-action")) return;
+    router.push(
+      `/${locale || "en"}/dashboard/listings/${context ? `${context}/` : ""}${
+        property.listing_id
+      }`
+    );
+  };
 
   return (
     <div
-      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full mx-auto flex flex-col cursor-pointer"
+      className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg w-full h-full mx-auto flex flex-col cursor-pointer"
       style={{
         pointerEvents: isFading ? "none" : undefined,
         opacity: isFading ? 0 : 1,
@@ -184,14 +232,15 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
       role="button"
       tabIndex={0}
       aria-label={property.title}
+      onClick={handleCardClick}
     >
       {/* Edit and Delete buttons top-right - only show if user owns the listing */}
       {canShowEditDelete && (
         <div className="absolute top-3 right-3 z-20 flex gap-2">
           <Link
             href={`/${locale || ""}/dashboard/listings/${
-              property.listing_id
-            }/edit`}
+              context ? `${context}/` : ""
+            }${property.listing_id}/edit`}
             className="property-action rounded-full bg-white/80 p-2 text-gray-700 shadow hover:bg-blue-100 hover:text-blue-600 transition"
             title="Edit listing"
             onClick={(e) => e.stopPropagation()}
@@ -235,13 +284,15 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
       {/* Grouped Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-          {ownershipLabel}
+          {isClient
+            ? getLabel("ownership_types", property.ownership_type_id)
+            : ""}
         </span>
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-          {listingTypeLabel}
+          {isClient ? getLabel("listing_types", property.listing_type_id) : ""}
         </span>
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-          {listingStatusLabel}
+          {isClient ? getLabel("listing_statuses", property.status_id) : ""}
         </span>
       </div>
       {/* Property Image Carousel with fallback */}
@@ -310,14 +361,20 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
           >
             <button
               className="absolute top-1/2 left-2 z-20 -translate-y-1/2 rounded-full bg-gray-900/60 p-1 text-white hover:bg-gray-900"
-              onClick={() => instanceRef.current?.prev()}
+              onClick={(e) => {
+                e.stopPropagation();
+                instanceRef.current?.prev();
+              }}
               aria-label="Previous image"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <button
               className="absolute top-1/2 right-2 z-20 -translate-y-1/2 rounded-full bg-gray-900/60 p-1 text-white hover:bg-gray-900"
-              onClick={() => instanceRef.current?.next()}
+              onClick={(e) => {
+                e.stopPropagation();
+                instanceRef.current?.next();
+              }}
               aria-label="Next image"
             >
               <ArrowRight className="h-5 w-5" />
@@ -348,7 +405,7 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
           <div className="flex items-center justify-between mt-1">
             <span className="inline-flex items-center gap-1 text-sm text-gray-600">
               <MapPin className="h-4 w-4 text-gray-400" />
-              {location}
+              {isClient ? getLocationLabel(property.location_id) : ""}
             </span>
             {property.listing_id && (
               <span className="inline-flex items-center gap-0 text-sm text-gray-600 ml-2">
@@ -418,15 +475,19 @@ export default function PropertyCard({ property, locale }: PropertyCardProps) {
           </div>
           {/* Features */}
           <div className="mt-3 flex flex-wrap gap-2">
-            {property.features &&
-              property.features.map((featureId) => (
-                <span
-                  key={featureId}
-                  className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
-                >
-                  {useFeatureLabel(featureId, locale || "en")}
-                </span>
-              ))}
+            {isClient &&
+              property.features &&
+              property.features.map((feature, index) => {
+                const label = getFeatureLabel(feature);
+                return (
+                  <span
+                    key={index}
+                    className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800"
+                  >
+                    {label}
+                  </span>
+                );
+              })}
           </div>
         </div>
         {/* Price */}

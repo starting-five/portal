@@ -1,3 +1,129 @@
+/**
+ * Returns the total count of listings matching the given filters.
+ */
+const countByFilters = async (filters = {}) => {
+  const {
+    featureIds,
+    userId,
+    searchText,
+    locationId,
+    minPrice,
+    maxPrice,
+    ownershipTypeId,
+    listingTypeId,
+    listingStatusId,
+    bedrooms,
+    bathrooms,
+  } = filters;
+  let queryParams = [];
+  let whereClauses = [];
+
+  // Feature filter logic (after queryParams/whereClauses are initialized)
+  if (featureIds && Array.isArray(featureIds) && featureIds.length > 0) {
+    // Strict match: listing must have ALL requested features
+    const placeholders = featureIds
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...featureIds);
+    whereClauses.push(`id IN (
+      SELECT listing_id 
+      FROM listing_features 
+      WHERE feature_id IN (${placeholders})
+      GROUP BY listing_id 
+      HAVING COUNT(DISTINCT feature_id) = ${featureIds.length}
+    )`);
+  } else if (featureIds) {
+    queryParams.push(featureIds);
+    whereClauses.push(
+      `id IN (SELECT listing_id FROM listing_features WHERE feature_id = $${queryParams.length})`
+    );
+  }
+
+  if (userId) {
+    queryParams.push(userId);
+    whereClauses.push(`user_id = $${queryParams.length}`);
+  }
+  if (searchText) {
+    queryParams.push(searchText.split(" ").join(" & "));
+    whereClauses.push(
+      `search_vector @@ to_tsquery('english', $${queryParams.length})`
+    );
+  }
+  if (locationId && Array.isArray(locationId) && locationId.length > 0) {
+    const placeholders = locationId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...locationId);
+    whereClauses.push(`location_id IN (${placeholders})`);
+  } else if (locationId) {
+    queryParams.push(locationId);
+    whereClauses.push(`location_id = $${queryParams.length}`);
+  }
+  if (minPrice) {
+    queryParams.push(minPrice);
+    whereClauses.push(`price >= $${queryParams.length}`);
+  }
+  if (maxPrice) {
+    queryParams.push(maxPrice);
+    whereClauses.push(`price <= $${queryParams.length}`);
+  }
+  if (
+    ownershipTypeId &&
+    Array.isArray(ownershipTypeId) &&
+    ownershipTypeId.length > 0
+  ) {
+    const placeholders = ownershipTypeId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...ownershipTypeId);
+    whereClauses.push(`ownership_type_id IN (${placeholders})`);
+  } else if (ownershipTypeId) {
+    queryParams.push(ownershipTypeId);
+    whereClauses.push(`ownership_type_id = $${queryParams.length}`);
+  }
+  if (
+    listingTypeId &&
+    Array.isArray(listingTypeId) &&
+    listingTypeId.length > 0
+  ) {
+    const placeholders = listingTypeId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...listingTypeId);
+    whereClauses.push(`listing_type_id IN (${placeholders})`);
+  } else if (listingTypeId) {
+    queryParams.push(listingTypeId);
+    whereClauses.push(`listing_type_id = $${queryParams.length}`);
+  }
+  if (
+    listingStatusId &&
+    Array.isArray(listingStatusId) &&
+    listingStatusId.length > 0
+  ) {
+    const placeholders = listingStatusId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...listingStatusId);
+    whereClauses.push(`status_id IN (${placeholders})`);
+  } else if (listingStatusId) {
+    queryParams.push(listingStatusId);
+    whereClauses.push(`status_id = $${queryParams.length}`);
+  }
+  if (bedrooms) {
+    queryParams.push(bedrooms);
+    whereClauses.push(`bedrooms >= $${queryParams.length}`);
+  }
+  if (bathrooms) {
+    queryParams.push(bathrooms);
+    whereClauses.push(`bathrooms >= $${queryParams.length}`);
+  }
+
+  const whereString =
+    whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+  const query = `SELECT COUNT(*) FROM listings ${whereString};`;
+  const { rows } = await db.query(query, queryParams);
+  return parseInt(rows[0].count, 10);
+};
 const db = require("../db/index.js");
 
 /**
@@ -8,7 +134,11 @@ const findAll = async () => {
   const query = `
     SELECT
       l.*,
-      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
       COALESCE(json_agg(DISTINCT jsonb_build_object('id', f.id)) FILTER (WHERE f.id IS NOT NULL), '[]') AS features
     FROM listings l
     LEFT JOIN listing_images li ON l.id = li.listing_id
@@ -42,7 +172,11 @@ const findByPublicId = async (id) => {
       l.land_size_sqm,
       l.building_size_sqm,
       l.year_built,
-      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
       COALESCE(json_agg(DISTINCT jsonb_build_object('id', f.id)) FILTER (WHERE f.id IS NOT NULL), '[]') AS features
     FROM listings l
     LEFT JOIN listing_images li ON l.id = li.listing_id
@@ -293,58 +427,179 @@ const removeByPublicId = async (publicListingId) => {
  * Finds listings based on a dynamic set of filters, including full-text search.
  * @param {Object} filters - An object containing filter criteria.
  * @param {string} [filters.searchText] - Text to search for in title and description.
- * @param {number} [filters.locationId] - The ID of the location to filter by.
+ * @param {number|number[]} [filters.locationId] - The ID(s) of the location to filter by.
+ * @param {number|number[]} [filters.listingTypeId] - The ID(s) of the listing type to filter by.
+ * @param {number|number[]} [filters.ownershipTypeId] - The ID(s) of the ownership type to filter by.
+ * @param {number|number[]} [filters.listingStatusId] - The ID(s) of the listing status to filter by (from API param listing_status_id).
  * @param {number} [filters.minPrice] - The minimum price.
  * @param {number} [filters.maxPrice] - The maximum price.
+ * @param {number} [filters.bedrooms] - Number of bedrooms.
+ * @param {number} [filters.bathrooms] - Number of bathrooms.
  * @returns {Promise<Array>} A promise that resolves to an array of matching listing objects.
  */
-const findByFilters = async (filters = {}) => {
-  const { searchText, locationId, minPrice, maxPrice } = filters;
-  let queryParams = [];
+
+const findByFiltersWithTranslations = async (
+  filters = {},
+  lang = "en",
+  limit = null,
+  offset = null
+) => {
+  const {
+    featureIds,
+    userId,
+    searchText,
+    locationId,
+    minPrice,
+    maxPrice,
+    ownershipTypeId,
+    listingTypeId,
+    listingStatusId,
+    bedrooms,
+    bathrooms,
+  } = filters;
+  let queryParams = [lang];
   let whereClauses = [];
 
+  // Feature filter logic (after queryParams/whereClauses are initialized)
+  if (featureIds && Array.isArray(featureIds) && featureIds.length > 0) {
+    // Strict match: listing must have ALL requested features
+    const placeholders = featureIds
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...featureIds);
+    whereClauses.push(`l.id IN (
+      SELECT listing_id 
+      FROM listing_features 
+      WHERE feature_id IN (${placeholders})
+      GROUP BY listing_id 
+      HAVING COUNT(DISTINCT feature_id) = ${featureIds.length}
+    )`);
+  } else if (featureIds) {
+    queryParams.push(featureIds);
+    whereClauses.push(
+      `l.id IN (SELECT listing_id FROM listing_features WHERE feature_id = $${queryParams.length})`
+    );
+  }
+
+  if (userId) {
+    queryParams.push(userId);
+    whereClauses.push(`l.user_id = $${queryParams.length}`);
+  }
   if (searchText) {
     queryParams.push(searchText.split(" ").join(" & "));
     whereClauses.push(
       `l.search_vector @@ to_tsquery('english', $${queryParams.length})`
     );
   }
-
-  if (locationId) {
+  if (locationId && Array.isArray(locationId) && locationId.length > 0) {
+    const placeholders = locationId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...locationId);
+    whereClauses.push(`l.location_id IN (${placeholders})`);
+  } else if (locationId) {
     queryParams.push(locationId);
     whereClauses.push(`l.location_id = $${queryParams.length}`);
   }
-
-  // Note: This assumes a single currency for filtering or requires conversion logic.
-  // For simplicity, we filter directly on the stored price.
   if (minPrice) {
     queryParams.push(minPrice);
     whereClauses.push(`l.price >= $${queryParams.length}`);
   }
-
   if (maxPrice) {
     queryParams.push(maxPrice);
     whereClauses.push(`l.price <= $${queryParams.length}`);
+  }
+  if (
+    ownershipTypeId &&
+    Array.isArray(ownershipTypeId) &&
+    ownershipTypeId.length > 0
+  ) {
+    const placeholders = ownershipTypeId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...ownershipTypeId);
+    whereClauses.push(`l.ownership_type_id IN (${placeholders})`);
+  } else if (ownershipTypeId) {
+    queryParams.push(ownershipTypeId);
+    whereClauses.push(`l.ownership_type_id = $${queryParams.length}`);
+  }
+  if (
+    listingTypeId &&
+    Array.isArray(listingTypeId) &&
+    listingTypeId.length > 0
+  ) {
+    const placeholders = listingTypeId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...listingTypeId);
+    whereClauses.push(`l.listing_type_id IN (${placeholders})`);
+  } else if (listingTypeId) {
+    queryParams.push(listingTypeId);
+    whereClauses.push(`l.listing_type_id = $${queryParams.length}`);
+  }
+  if (
+    listingStatusId &&
+    Array.isArray(listingStatusId) &&
+    listingStatusId.length > 0
+  ) {
+    const placeholders = listingStatusId
+      .map((_, idx) => `$${queryParams.length + idx + 1}`)
+      .join(", ");
+    queryParams.push(...listingStatusId);
+    whereClauses.push(`l.status_id IN (${placeholders})`);
+  } else if (listingStatusId) {
+    queryParams.push(listingStatusId);
+    whereClauses.push(`l.status_id = $${queryParams.length}`);
+  }
+  if (bedrooms) {
+    queryParams.push(bedrooms);
+    whereClauses.push(`l.bedrooms >= $${queryParams.length}`);
+  }
+  if (bathrooms) {
+    queryParams.push(bathrooms);
+    whereClauses.push(`l.bathrooms >= $${queryParams.length}`);
   }
 
   const whereString =
     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
-  // We reuse the main query structure
-  const baseQuery = `
-    SELECT l.*,
-           COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
-           COALESCE(json_agg(DISTINCT jsonb_build_object('id', f.id)) FILTER (WHERE f.id IS NOT NULL), '[]') AS features
+  let query = `
+    SELECT
+      l.*, l.price,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
+      COALESCE(json_agg(DISTINCT f.id) FILTER (WHERE f.id IS NOT NULL), '[]') AS features,
+      COALESCE(t.title, NULL) AS title,
+      COALESCE(t.description, NULL) AS description
     FROM listings l
+    LEFT JOIN listing_types lt ON l.listing_type_id = lt.id
+    LEFT JOIN ownership_types ot ON l.ownership_type_id = ot.id
+    LEFT JOIN listing_statuses ls ON l.status_id = ls.id
     LEFT JOIN listing_images li ON l.id = li.listing_id
     LEFT JOIN listing_features lf ON l.id = lf.listing_id
     LEFT JOIN features f ON lf.feature_id = f.id
+    LEFT JOIN listing_translations t ON l.id = t.listing_id AND t.language_code = $1
     ${whereString}
-    GROUP BY l.id
-    ORDER BY l.created_at DESC;
+    GROUP BY l.id, lt.id, ot.id, ls.id, t.title, t.description
+    ORDER BY l.created_at DESC
   `;
-
-  const { rows } = await db.query(baseQuery, queryParams);
+  let paramOffset = queryParams.length + 1;
+  if (limit !== null && offset !== null) {
+    query += ` LIMIT $${paramOffset} OFFSET $${paramOffset + 1}`;
+    queryParams.push(limit, offset);
+  } else if (limit !== null) {
+    query += ` LIMIT $${paramOffset}`;
+    queryParams.push(limit);
+  } else if (offset !== null) {
+    query += ` OFFSET $${paramOffset}`;
+    queryParams.push(offset);
+  } else {
+    query += `;`;
+  }
+  const { rows } = await db.query(query, queryParams);
   return rows;
 };
 
@@ -352,11 +607,19 @@ const findByFilters = async (filters = {}) => {
  * Finds all listings and returns translations for the requested language (fallback to English).
  */
 
-const findAllWithTranslations = async (lang = "en") => {
-  const query = `
+const findAllWithTranslations = async (
+  lang = "en",
+  limit = null,
+  offset = null
+) => {
+  let query = `
     SELECT
       l.*, l.price,
-      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
       COALESCE(json_agg(DISTINCT f.id) FILTER (WHERE f.id IS NOT NULL), '[]') AS features,
       COALESCE(t.title, NULL) AS title,
       COALESCE(t.description, NULL) AS description
@@ -369,9 +632,21 @@ const findAllWithTranslations = async (lang = "en") => {
     LEFT JOIN features f ON lf.feature_id = f.id
     LEFT JOIN listing_translations t ON l.id = t.listing_id AND t.language_code = $1
     GROUP BY l.id, lt.id, ot.id, ls.id, t.title, t.description
-    ORDER BY l.created_at DESC;
-  `;
-  const { rows } = await db.query(query, [lang]);
+    ORDER BY l.created_at DESC`;
+  let params = [lang];
+  if (limit !== null && offset !== null) {
+    query += ` LIMIT $2 OFFSET $3`;
+    params = [lang, limit, offset];
+  } else if (limit !== null) {
+    query += ` LIMIT $2`;
+    params = [lang, limit];
+  } else if (offset !== null) {
+    query += ` OFFSET $2`;
+    params = [lang, offset];
+  } else {
+    query += `;`;
+  }
+  const { rows } = await db.query(query, params);
   return rows;
 };
 
@@ -384,7 +659,11 @@ const findByPublicIdWithTranslation = async (listing_id, lang = "en") => {
   const query = `
     SELECT
       l.*, l.price,
-      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
       COALESCE(json_agg(DISTINCT f.id) FILTER (WHERE f.id IS NOT NULL), '[]') AS features,
       COALESCE(t.title, NULL) AS title,
       COALESCE(t.description, NULL) AS description
@@ -423,11 +702,20 @@ const findByPublicIdWithTranslation = async (listing_id, lang = "en") => {
 /**
  * Finds all listings for a specific user and returns translations for the requested language.
  */
-const findAllByUserWithTranslations = async (userId, lang = "en") => {
-  const query = `
+const findAllByUserWithTranslations = async (
+  userId,
+  lang = "en",
+  limit = null,
+  offset = null
+) => {
+  let query = `
     SELECT
       l.*, l.price,
-      COALESCE(json_agg(DISTINCT li.*) FILTER (WHERE li.id IS NOT NULL), '[]') AS images,
+      COALESCE((
+        SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
+        FROM listing_images li_sub
+        WHERE li_sub.listing_id = l.id
+      ), '[]') AS images,
       COALESCE(json_agg(DISTINCT f.id) FILTER (WHERE f.id IS NOT NULL), '[]') AS features,
       COALESCE(t.title, NULL) AS title,
       COALESCE(t.description, NULL) AS description
@@ -441,10 +729,40 @@ const findAllByUserWithTranslations = async (userId, lang = "en") => {
     LEFT JOIN listing_translations t ON l.id = t.listing_id AND t.language_code = $2
     WHERE l.user_id = $1
     GROUP BY l.id, lt.id, ot.id, ls.id, t.title, t.description
-    ORDER BY l.created_at DESC;
-  `;
-  const { rows } = await db.query(query, [userId, lang]);
+    ORDER BY l.created_at DESC`;
+  let params = [userId, lang];
+  if (limit !== null && offset !== null) {
+    query += ` LIMIT $3 OFFSET $4`;
+    params = [userId, lang, limit, offset];
+  } else if (limit !== null) {
+    query += ` LIMIT $3`;
+    params = [userId, lang, limit];
+  } else if (offset !== null) {
+    query += ` OFFSET $3`;
+    params = [userId, lang, offset];
+  } else {
+    query += `;`;
+  }
+  const { rows } = await db.query(query, params);
   return rows;
+};
+
+/**
+ * Returns the total count of all listings.
+ */
+const countAll = async () => {
+  const query = "SELECT COUNT(*) FROM listings;";
+  const { rows } = await db.query(query);
+  return parseInt(rows[0].count, 10);
+};
+
+/**
+ * Returns the total count of listings for a specific user.
+ */
+const countByUser = async (userId) => {
+  const query = "SELECT COUNT(*) FROM listings WHERE user_id = $1;";
+  const { rows } = await db.query(query, [userId]);
+  return parseInt(rows[0].count, 10);
 };
 
 module.exports = {
@@ -453,8 +771,11 @@ module.exports = {
   create,
   updateByPublicId,
   removeByPublicId,
-  findByFilters,
   findAllWithTranslations,
   findByPublicIdWithTranslation,
   findAllByUserWithTranslations,
+  findByFiltersWithTranslations,
+  countByFilters,
+  countAll,
+  countByUser,
 };

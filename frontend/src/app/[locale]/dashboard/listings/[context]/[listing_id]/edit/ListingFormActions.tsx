@@ -1,8 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import { deleteUserTmpImages } from "@/lib/supabase/listingImageUtils";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 type ListingFormActionsProps = {
   isSubmitting?: boolean;
@@ -18,21 +20,20 @@ export default function ListingFormActions({
   const t = useTranslations("ListingForm");
   const locale = useLocale();
   const router = useRouter();
+  const params = useParams();
+  const context = params?.context;
 
   async function handleCancel() {
-    console.log("Handling cancel action");
     if (uploadedImages && uploadedImages.length && currentUser) {
-      const { deleteUserTmpImages } = await import(
-        "@/lib/supabase/listingImageUtils"
-      );
-      const { createClient } = await import("@/lib/supabase/client");
       await deleteUserTmpImages({
         supabase: createClient(),
         userId: currentUser.id,
         images: uploadedImages,
       });
     }
-    router.push(`/${locale}/dashboard/listings`);
+    router.push(
+      `/${locale}/dashboard/listings/${context || ""}`.replace(/\/$/, "")
+    );
   }
 
   return (

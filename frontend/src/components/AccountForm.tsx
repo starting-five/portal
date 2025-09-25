@@ -1,14 +1,15 @@
 "use client";
 
 import SupabaseImageManager, {
-    SupabaseImage,
+  SupabaseImage,
 } from "@/components/SupabaseImageManager";
+import { Button } from "@/components/ui/button";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
@@ -41,6 +42,7 @@ export default function AccountForm({
   onSubmit: (values: AccountFormValues) => void;
 }) {
   const t = useTranslations();
+  const user = useSelector((state: any) => state.authUser?.user);
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: initialValues || {
@@ -53,7 +55,16 @@ export default function AccountForm({
   const [watermarkImage, setWatermarkImage] = React.useState<SupabaseImage[]>(
     []
   );
-  const user = useSelector((state: any) => state.authUser?.user);
+  React.useEffect(() => {
+    if (user && user.watermark_url) {
+      setWatermarkImage([
+        {
+          url: user.watermark_url,
+          name: user.watermark_url.split("/").pop() || "watermark.png",
+        },
+      ]);
+    }
+  }, [user]);
   const updateUser = useUpdateUser();
   return (
     <Form {...form}>
@@ -111,8 +122,10 @@ export default function AccountForm({
           )}
         />
         {/* Watermark upload at the bottom */}
-        <div>
-          <FormLabel>{t("AccountForm.watermark_label")}</FormLabel>
+        <div className="mt-6">
+          <FormLabel className="mb-4 block">
+            {t("AccountForm.watermark_label")}
+          </FormLabel>
           <SupabaseImageManager
             bucket={process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
             folder={user ? `uploads/${user.id}/watermark` : undefined}
@@ -154,12 +167,9 @@ export default function AccountForm({
             }}
           />
         </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
+        <Button type="submit" className="w-full">
           {t("AccountForm.save_changes")}
-        </button>
+        </Button>
       </form>
     </Form>
   );

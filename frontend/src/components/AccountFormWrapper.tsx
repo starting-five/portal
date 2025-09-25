@@ -4,9 +4,9 @@ import AccountForm, { AccountFormValues } from "@/components/AccountForm";
 import { useUpdateUser } from "@/hooks/useUpdateUser";
 import { createClient } from "@/lib/supabase/client";
 import { setAuthUser } from "@/store/authUserSlice";
+import { useTranslations } from "next-intl";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 
 export default function AccountFormWrapper() {
   const t = useTranslations();
@@ -35,15 +35,14 @@ export default function AccountFormWrapper() {
       );
       toast.success(t("AccountFormWrapper.profile_updated"));
     } catch (err: any) {
-      toast.error(t("AccountFormWrapper.update_failed", { error: err.message }));
+      toast.error(
+        t("AccountFormWrapper.update_failed", { error: err.message })
+      );
     }
   }
 
   return (
-    <div
-      className="flex flex-col items-start px-8 w-full max-w-2xl"
-      style={{ marginTop: "-6rem" }}
-    >
+    <div className="flex flex-col items-center px-8 w-full max-w-2xl mt-8 mx-auto">
       <AccountForm
         initialValues={{
           name: user.name || "",

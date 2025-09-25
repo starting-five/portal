@@ -22,7 +22,11 @@ export default function ClientProviders({
 }: ClientProvidersProps) {
   return (
     <Provider store={store}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone="UTC"
+      >
         <LookupsProvider lookups={lookups}>
           <QueryClientWrapper>{children}</QueryClientWrapper>
         </LookupsProvider>
