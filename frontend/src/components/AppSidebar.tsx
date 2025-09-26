@@ -97,7 +97,7 @@ export function AppSidebar({ locale }: { locale: string }) {
         </div>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{ email: user?.email }} />
+        <NavUser user={{ email: user?.email }} locale={locale} />
       </SidebarFooter>
     </Sidebar>
   );

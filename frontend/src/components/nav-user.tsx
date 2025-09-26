@@ -1,34 +1,40 @@
 "use client";
 
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { createClient } from "@/lib/supabase/client";
+import { clearAuthUser } from "@/store/authUserSlice";
 import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { AccountButton } from "./AccountButton";
 import { LogoutButton } from "./LogoutButton";
 
 export function NavUser({
   user,
+  locale,
 }: {
   user: {
     email: string;
   };
+  locale: string;
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   return (
     <SidebarMenu>
@@ -62,12 +68,25 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  router.push(`/${locale}/dashboard/account`);
+                }}
+                className="cursor-pointer hover:bg-gray-100"
+              >
                 <AccountButton />
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={async () => {
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                dispatch(clearAuthUser());
+                router.push(`/${locale}/`);
+              }}
+              className="cursor-pointer hover:bg-gray-100"
+            >
               <LogoutButton />
             </DropdownMenuItem>
           </DropdownMenuContent>

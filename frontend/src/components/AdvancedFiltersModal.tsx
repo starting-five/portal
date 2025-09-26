@@ -312,7 +312,7 @@ const AdvancedFiltersModal = ({
         side="right"
         className="w-full max-w-[480px] sm:max-w-[580px] md:max-w-[700px] flex flex-col h-full p-0"
       >
-        <SheetHeader className="p-4 sm:p-6 pb-0 flex-shrink-0 relative z-[60] bg-background">
+        <SheetHeader className="p-4 sm:p-6 pb-0 flex-shrink-0 relative z-[101] bg-background">
           <SheetTitle className="text-lg sm:text-xl font-semibold">
             {t("advancedPropertyFilters", {
               default: "Advanced Property Filters",
@@ -375,7 +375,7 @@ const AdvancedFiltersModal = ({
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-[300px] p-0 z-[100]"
+                        className="w-[300px] p-0 z-[50]"
                         side="bottom"
                         align="start"
                         avoidCollisions={true}
