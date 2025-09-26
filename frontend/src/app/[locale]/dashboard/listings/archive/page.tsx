@@ -1,3 +1,4 @@
+import FiltersBar from "@/components/FiltersBar";
 import ListingsGridClient from "@/components/ListingsGridClient";
 import Spinner from "@/components/ui/Spinner";
 import { LISTING_STATUS_IDS } from "@/lib/app.constants";
@@ -63,7 +64,7 @@ export default async function ArchivePage({
   );
 }
 
-import FiltersBar from "@/components/FiltersBar";
+
 
 function ArchiveLoadingSpinner() {
   return (
