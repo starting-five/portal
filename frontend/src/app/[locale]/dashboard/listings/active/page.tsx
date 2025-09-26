@@ -12,10 +12,10 @@ export default async function ActivePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Record<string, string | string[]>;
+  searchParams: Promise<Record<string, string | string[]>>;
 }) {
   const { locale } = await params;
-  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const resolvedSearchParams = await searchParams;
   const t = await getTranslations("MyListings");
   const cookieStore = await cookies();
   const supabase = createServerClient(
