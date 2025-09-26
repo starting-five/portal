@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { bulkCreateListingImages } from "@/lib/api/listingImages";
-import { createListing } from "@/lib/api/listings";
+import { createListing, updateListing } from "@/lib/api/listings";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
 import { moveListingImage } from "@/lib/supabase/listingImageUtils";
@@ -445,16 +445,16 @@ export default function ListingForm({
       let result;
       let listingId;
       if (mode === "edit") {
-        // In edit mode, just update images and listing
+        // In edit mode, update listing details first, then images
         if (!initialValues?.id || !initialValues?.listing_id) {
           throw new Error("Missing listing id for edit mode");
         }
+        await updateListing(initialValues.listing_id, cleanedValues, jwt || undefined);
         await moveAndUploadImages({
           internalId: initialValues.id,
           publicListingId: initialValues.listing_id,
           jwt: jwt || undefined,
         });
-        // Optionally update the listing details here if needed
         toast.success(t("listing_updated_success"));
       } else {
         // In create mode, create the listing first, then upload images
