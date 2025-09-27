@@ -136,7 +136,6 @@ export default function AccountForm({
             isWatermark={true}
             onUploadSuccess={(url) => {
               if (user) {
-                console.log("creating watermark");
                 const supabase = createClient();
                 supabase.auth.getSession().then(({ data }) => {
                   const accessToken = data.session?.access_token;

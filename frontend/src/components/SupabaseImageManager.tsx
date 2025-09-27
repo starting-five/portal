@@ -81,6 +81,7 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = (props) => {
     maxFileSize,
     upsert: false,
     watermarkUrl,
+    isWatermark,
   });
 
   // Handle upload success
@@ -219,11 +220,13 @@ const SupabaseImageManager: React.FC<SupabaseImageManagerProps> = (props) => {
           opacity: isDragging ? 0.5 : 1,
           zIndex: isDragging ? 10 : undefined,
         }}
-        className="relative flex flex-col items-center w-40 border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden group cursor-move"
+        className="relative flex flex-col items-center w-40 border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden group"
         {...attributes}
-        {...listeners}
       >
-        <div className="w-full h-28 bg-slate-100 flex items-center justify-center overflow-hidden">
+        <div
+          className="w-full h-28 bg-slate-100 flex items-center justify-center overflow-hidden cursor-move"
+          {...listeners}
+        >
           <Image
             src={img.url}
             alt={img.alt || img.name}

@@ -87,7 +87,7 @@ export default function FiltersBar({
 
   // Handler for modal apply
   function handleApplyFilters(newFilters: typeof filterState) {
-    console.log("Applying filters from modal: ", newFilters);
+    // console.log("Applying filters from modal: ", newFilters);
     setSelectedPropertyTypes(newFilters.selectedPropertyTypes);
     setSelectedLocations(newFilters.selectedLocations);
     setOwnershipTypes(newFilters.ownershipTypes);
@@ -176,7 +176,7 @@ export default function FiltersBar({
         params.set("listingStatuses", listingStatuses.join(","));
       if (features.length) params.set("features", features.join(","));
       const query = params.toString();
-      console.log("Navigating with query: ", query);
+      // console.log("Navigating with query: ", query);
       router.push(`/${locale}/${basePath}${query ? `?${query}` : ""}`, {
         scroll: false,
       });
@@ -288,12 +288,12 @@ export default function FiltersBar({
                           tabIndex={0}
                           className="ml-2 flex-shrink-0 cursor-pointer text-gray-400 hover:text-gray-600 focus:outline-none"
                           onClick={(e) => {
-                            console.log("clear locations");
+                            // console.log("clear locations");
                             e.stopPropagation();
                             setSelectedLocations([]);
                           }}
                           onKeyDown={(e) => {
-                            console.log("key down on clear locations");
+                            // console.log("key down on clear locations");
                             if (e.key === "Enter" || e.key === " ") {
                               e.stopPropagation();
                               setSelectedLocations([]);
@@ -328,7 +328,7 @@ export default function FiltersBar({
                               location.id
                             );
                             const handleToggle = () => {
-                              console.log("toggle location", location.id);
+                              // console.log("toggle location", location.id);
                               setSelectedLocations((prev) =>
                                 prev.includes(location.id)
                                   ? prev.filter((l) => l !== location.id)
