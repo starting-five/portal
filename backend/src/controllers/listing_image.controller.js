@@ -1,4 +1,4 @@
-const ListingImage = require('../models/listing_image.model');
+const ListingImage = require('../models/listing_image.model.js');
 
 /**
  * Retrieves all listing images.
@@ -46,6 +46,7 @@ const getImagesForListing = async (req, res) => {
 
 /**
  * Creates a new listing image.
+ * Accepts: { listing_id, url, alt_text, order }
  */
 const createListingImage = async (req, res) => {
   try {
@@ -59,6 +60,7 @@ const createListingImage = async (req, res) => {
 
 /**
  * Updates an existing listing image.
+ * Accepts: { url, alt_text, order }
  */
 const updateListingImage = async (req, res) => {
   try {
@@ -91,6 +93,24 @@ const deleteListingImage = async (req, res) => {
   }
 };
 
+
+/**
+ * Bulk creates listing images.
+ * Expects req.body to be an array of image objects ({ listing_id, url, alt_text, order })
+ */
+const bulkCreateListingImages = async (req, res) => {
+  try {
+    if (!Array.isArray(req.body) || req.body.length === 0) {
+      return res.status(400).json({ message: 'Request body must be a non-empty array of images.' });
+    }
+    const createdImages = await ListingImage.bulkCreate(req.body);
+    res.status(201).json(createdImages);
+  } catch (error) {
+    console.error('Error bulk creating listing images:', error.stack);
+    res.status(500).json({ message: 'An error occurred while bulk creating listing images.' });
+  }
+};
+
 module.exports = {
   getAllListingImages,
   getListingImageById,
@@ -98,4 +118,5 @@ module.exports = {
   createListingImage,
   updateListingImage,
   deleteListingImage,
+  bulkCreateListingImages,
 };

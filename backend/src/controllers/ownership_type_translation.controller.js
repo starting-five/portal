@@ -21,6 +21,7 @@ exports.getAllOwnershipTypeTranslations = async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ error: "Failed to fetch ownership type translations" });
@@ -49,6 +50,7 @@ exports.getOwnershipTypeTranslationsById = async (req, res) => {
     }
     res.json(translations);
   } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ error: "Failed to fetch ownership type translations" });
@@ -86,6 +88,7 @@ exports.updateOwnershipTypeTranslations = async (req, res) => {
     );
     return res.json(updatedRes.rows);
   } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ error: "Failed to update ownership type translations." });
@@ -123,6 +126,7 @@ exports.updateOwnershipTypeTranslation = async (req, res) => {
     }
     res.json(updatedRes.rows[0]);
   } catch (err) {
+    console.error(err);
     res
       .status(500)
       .json({ error: "Failed to update ownership type translation." });
@@ -177,6 +181,7 @@ exports.createOwnershipTypeWithTranslations = async (req, res) => {
         translations: createdTranslations.rows,
       });
   } catch (err) {
+    console.error(err);
     await client.query("ROLLBACK");
     res.status(500).json({ error: "Failed to create ownership type." });
   } finally {

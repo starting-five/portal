@@ -17,6 +17,7 @@ async function getClaims(token) {
     return payload;
   } catch (err) {
     console.timeEnd('JWT-Verification');
+    console.error('JWT verification error:', err);
     return null;
   }
 }

@@ -5,16 +5,18 @@ const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 // You would import your own modules here as you create them
-const db = require('./src/db'); // Your DB connection setup
+// const db = require('./src/db'); // Your DB connection setup
 const apiRouter = require('./src/api'); // Import the main API router
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const pool = db.pool; // Get the pool from your DB module
+// const pool = db.pool; // Get the pool from your DB module
 
 // --- Core Middleware ---
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(cors({
+  exposedHeaders: ['Content-Disposition']
+})); // Enable Cross-Origin Resource Sharing and expose Content-Disposition
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.listen(PORT, async () => {

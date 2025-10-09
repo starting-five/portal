@@ -1,12 +1,13 @@
 "use client";
 
+import type { SupabaseImage } from "@/components/SupabaseImageManager";
+import SupabaseImageManager from "@/components/SupabaseImageManager";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,8 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createListing } from "@/lib/api/listings";
+import { bulkCreateListingImages } from "@/lib/api/listingImages";
+import { createListing, updateListing } from "@/lib/api/listings";
+import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
+import { moveListingImage } from "@/lib/supabase/listingImageUtils";
 import {
   selectFeatures,
   selectListingStatuses,
@@ -26,6 +30,7 @@ import {
   selectLocations,
   selectOwnershipTypes,
 } from "@/store/lookups";
+import { RootState } from "@/store/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -45,13 +50,35 @@ const formSchema = z.object({
   ownership_type_id: z.number({ required_error: "required_field" }),
   listing_type_id: z.number({ required_error: "required_field" }),
   location_id: z.number({ required_error: "required_field" }),
-  building_size_sqm: z.number().min(0, { message: "non_negative_error" }).optional().nullable(),
-  land_size_sqm: z.number().min(0, { message: "non_negative_error" }).optional().nullable(),
-  bedrooms: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
-  bathrooms: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
+  building_size_sqm: z
+    .number()
+    .min(0, { message: "non_negative_error" })
+    .optional()
+    .nullable(),
+  land_size_sqm: z
+    .number()
+    .min(0, { message: "non_negative_error" })
+    .optional()
+    .nullable(),
+  bedrooms: z
+    .number()
+    .min(0, { message: "non_negative_error" })
+    .optional()
+    .nullable(), // Must be non-negative if present
+  bathrooms: z
+    .number()
+    .min(0, { message: "non_negative_error" })
+    .optional()
+    .nullable(), // Must be non-negative if present
   features: z.array(z.number()).optional(),
-  price: z.number({ required_error: "required_field" }).min(0, { message: "non_negative_error" }),
-  year_built: z.number().min(0, { message: "non_negative_error" }).optional().nullable(), // Must be non-negative if present
+  price: z
+    .number({ required_error: "required_field" })
+    .min(0, { message: "non_negative_error" }),
+  year_built: z
+    .number()
+    .min(0, { message: "non_negative_error" })
+    .optional()
+    .nullable(), // Must be non-negative if present
   status_id: z.number({ required_error: "required_field" }),
 });
 
@@ -66,27 +93,76 @@ import { useLocale, useTranslations } from "next-intl";
 import React from "react";
 
 type ListingFormProps = {
-  children?: React.ReactNode | ((props: { isSubmitting: boolean }) => React.ReactNode);
+  children?:
+    | React.ReactNode
+    | ((props: {
+        isSubmitting: boolean;
+        uploadedImages: SupabaseImage[];
+        currentUser: any;
+      }) => React.ReactNode);
   initialValues?: any;
   mode?: "create" | "edit";
+  context?: string; // e.g. "drafts", "active", "archive"
 };
-
-import { updateListing } from "@/lib/api/listings";
 
 export default function ListingForm({
   children,
   initialValues,
   mode,
+  context,
 }: ListingFormProps) {
   // Track form rendering
   // console.timeEnd('Form Render Time');
   // console.log('📋 ListingForm component starting to render...', { mode, hasInitialValues: !!initialValues });
   // console.time('Form Complete Render');
-  
-  const router = useRouter();
+
   const t = useTranslations("ListingForm");
+  const router = useRouter();
   const locale = useLocale();
   const [isManuallyLoading, setIsManuallyLoading] = React.useState(false);
+  // Track uploaded images from SupabaseImageManager
+  const [uploadedImages, setUploadedImages] = React.useState<SupabaseImage[]>(
+    []
+  );
+  const [jwtState, setJwt] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    getCurrentUserJWT().then((jwt) => setJwt(jwt ?? undefined));
+  }, []);
+
+  // Fetch images for edit mode
+  React.useEffect(() => {
+    async function fetchImagesForEdit() {
+      if (mode === "edit" && initialValues?.listing_id) {
+        try {
+          const { getImagesForListing } = await import("@/lib/api/listings");
+          const images = await getImagesForListing(initialValues.listing_id);
+          if (Array.isArray(images)) {
+            const mapped = images.map((img) => {
+              // Always extract the filename from the URL (webp extension)
+              const urlParts = img.url ? img.url.split("/") : [];
+              const webpName =
+                urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+              return {
+                ...img,
+                name: img.alt_text || webpName || img.name || "",
+              };
+            });
+            setUploadedImages(mapped);
+          } else {
+            setUploadedImages([]);
+          }
+        } catch (err) {
+          console.error("Failed to fetch images for edit mode:", err);
+        }
+      }
+    }
+    fetchImagesForEdit();
+  }, [mode, initialValues?.listing_id]);
+  // Get current user from Redux
+  const currentUser = useSelector((state: RootState) => state.authUser?.user);
+  const watermarkUrl = currentUser?.watermark_url;
+
   const ownershipTypes =
     (useSelector(selectOwnershipTypes) as OwnershipType[]) || [];
   const listingTypes = (useSelector(selectListingTypes) as ListingType[]) || [];
@@ -96,37 +172,37 @@ export default function ListingForm({
   const features =
     (useSelector(selectFeatures) as FeatureCategoryWithItems[]) || [];
 
-  // Remove "archived" and "deleted" statuses if they exist
+  // Remove "deleted" statuses if they exist
   const filteredListingStatuses = listingStatuses.filter(
-    (status) => status.key !== "archived" && status.key !== "deleted"
+    (status) => status.key !== "deleted"
   );
-  // debugger;
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialValues,
       // Explicitly handle number fields to avoid 0 values for empty fields
-      building_size_sqm: 
-        initialValues?.building_size_sqm !== undefined && 
-        initialValues?.building_size_sqm !== null && 
+      building_size_sqm:
+        initialValues?.building_size_sqm !== undefined &&
+        initialValues?.building_size_sqm !== null &&
         initialValues?.building_size_sqm !== ""
           ? Number(initialValues.building_size_sqm)
           : undefined,
       land_size_sqm:
-        initialValues?.land_size_sqm !== undefined && 
-        initialValues?.land_size_sqm !== null && 
+        initialValues?.land_size_sqm !== undefined &&
+        initialValues?.land_size_sqm !== null &&
         initialValues?.land_size_sqm !== ""
           ? Number(initialValues.land_size_sqm)
           : undefined,
       bedrooms:
-        initialValues?.bedrooms !== undefined && 
-        initialValues?.bedrooms !== null && 
+        initialValues?.bedrooms !== undefined &&
+        initialValues?.bedrooms !== null &&
         initialValues?.bedrooms !== ""
           ? Number(initialValues.bedrooms)
           : undefined,
       bathrooms:
-        initialValues?.bathrooms !== undefined && 
-        initialValues?.bathrooms !== null && 
+        initialValues?.bathrooms !== undefined &&
+        initialValues?.bathrooms !== null &&
         initialValues?.bathrooms !== ""
           ? Number(initialValues.bathrooms)
           : undefined,
@@ -135,7 +211,9 @@ export default function ListingForm({
           ? Number(initialValues.price)
           : undefined,
       year_built:
-        initialValues?.year_built !== undefined && initialValues?.year_built !== null && initialValues?.year_built !== ""
+        initialValues?.year_built !== undefined &&
+        initialValues?.year_built !== null &&
+        initialValues?.year_built !== ""
           ? Number(initialValues.year_built)
           : undefined,
     },
@@ -148,27 +226,27 @@ export default function ListingForm({
       form.reset({
         ...initialValues,
         // Explicitly handle number fields to avoid 0 values for empty fields
-        building_size_sqm: 
-          initialValues?.building_size_sqm !== undefined && 
-          initialValues?.building_size_sqm !== null && 
+        building_size_sqm:
+          initialValues?.building_size_sqm !== undefined &&
+          initialValues?.building_size_sqm !== null &&
           initialValues?.building_size_sqm !== ""
             ? Number(initialValues.building_size_sqm)
             : undefined,
         land_size_sqm:
-          initialValues?.land_size_sqm !== undefined && 
-          initialValues?.land_size_sqm !== null && 
+          initialValues?.land_size_sqm !== undefined &&
+          initialValues?.land_size_sqm !== null &&
           initialValues?.land_size_sqm !== ""
             ? Number(initialValues.land_size_sqm)
             : undefined,
         bedrooms:
-          initialValues?.bedrooms !== undefined && 
-          initialValues?.bedrooms !== null && 
+          initialValues?.bedrooms !== undefined &&
+          initialValues?.bedrooms !== null &&
           initialValues?.bedrooms !== ""
             ? Number(initialValues.bedrooms)
             : undefined,
         bathrooms:
-          initialValues?.bathrooms !== undefined && 
-          initialValues?.bathrooms !== null && 
+          initialValues?.bathrooms !== undefined &&
+          initialValues?.bathrooms !== null &&
           initialValues?.bathrooms !== ""
             ? Number(initialValues.bathrooms)
             : undefined,
@@ -177,7 +255,9 @@ export default function ListingForm({
             ? Number(initialValues.price)
             : undefined,
         year_built:
-          initialValues?.year_built !== undefined && initialValues?.year_built !== null && initialValues?.year_built !== ""
+          initialValues?.year_built !== undefined &&
+          initialValues?.year_built !== null &&
+          initialValues?.year_built !== ""
             ? Number(initialValues.year_built)
             : undefined,
       });
@@ -186,10 +266,17 @@ export default function ListingForm({
 
   async function handleSubmit(values: any) {
     setIsManuallyLoading(true);
+    let jwt = jwtState;
 
     // Clean up optional number fields - convert empty/invalid values to undefined for optional fields
     const cleanOptionalNumber = (value: any) => {
-      if (value === null || value === undefined || value === "" || value === 0 || isNaN(value)) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === "" ||
+        value === 0 ||
+        isNaN(value)
+      ) {
         return undefined;
       }
       return value;
@@ -204,20 +291,191 @@ export default function ListingForm({
       year_built: cleanOptionalNumber(values.year_built),
     };
 
+    // Shared image move/upload logic
+    // Accept both internalId (DB) and publicListingId (Supabase folder)
+    async function moveAndUploadImages({
+      internalId,
+      publicListingId,
+      jwt,
+    }: {
+      internalId: string | number;
+      publicListingId: string;
+      jwt?: string;
+    }) {
+      let movedImages: SupabaseImage[] = [];
+      let actuallyMovedImages: SupabaseImage[] = [];
+      let existingDbImagesCount = 0;
+
+      if (uploadedImages.length && currentUser && publicListingId) {
+        const supabase = createClient();
+        movedImages = await Promise.all(
+          uploadedImages.map(async (img) => {
+            if (img.url && img.url.includes("/tmp/")) {
+              let imageName = img.name;
+              if (!imageName && img.url) {
+                const parts = img.url.split("/");
+                imageName = parts[parts.length - 1];
+              }
+              try {
+                const newUrl = await moveListingImage({
+                  supabase,
+                  userId: currentUser.id,
+                  listingId: publicListingId,
+                  imageName,
+                });
+                const movedImg = { ...img, url: newUrl };
+                actuallyMovedImages.push(movedImg);
+                return movedImg;
+              } catch (err) {
+                const errorMsg = (err as any)?.message
+                  ? `: ${(err as any).message}`
+                  : `: ${String(err)}`;
+                toast.error(t("image_move_failed") + errorMsg);
+                return img;
+              }
+            } else {
+              // Already in final folder, just keep as-is
+              return img;
+            }
+          })
+        );
+        setUploadedImages(movedImages);
+      } else {
+        movedImages = uploadedImages;
+      }
+
+      // Always persist sort_order for all images (existing and new)
+      // 1. For new listings, bulk upload all images with correct sort_order
+      // 2. For edit mode, update sort_order for all images (PUT), and bulk upload any new images
+      if (mode === "create") {
+        const imagesToUpload = movedImages.map((img, idx) => {
+          // Always use the webp filename from the URL for alt_text
+          const urlParts = img.url ? img.url.split("/") : [];
+          const webpName =
+            urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+          return {
+            listing_id: internalId,
+            url: img.url,
+            alt_text: webpName,
+            sort_order: idx,
+          };
+        });
+        if (imagesToUpload.length) {
+          try {
+            await bulkCreateListingImages(imagesToUpload, jwt);
+          } catch (err: any) {
+            toast.error(
+              t("image_upload_failed") +
+                (err?.message ? `: ${err.message}` : "")
+            );
+          }
+        }
+      } else {
+        // For edit mode, update sort_order for all images (existing and new)
+        // movedImages = all images in the gallery, in the new order
+        // If image has id, update via PUT; if not, bulk create
+        const imagesToCreate: {
+          listing_id: string | number;
+          url: string;
+          alt_text?: string;
+          sort_order: number;
+        }[] = [];
+        const imagesToUpdate: (SupabaseImage & {
+          sort_order: number;
+          alt_text?: string;
+        })[] = [];
+        movedImages.forEach((img, idx) => {
+          // Always use the webp filename from the URL for alt_text
+          const urlParts = img.url ? img.url.split("/") : [];
+          const webpName =
+            urlParts.length > 0 ? urlParts[urlParts.length - 1] : "";
+          if (img.id) {
+            imagesToUpdate.push({
+              ...img,
+              sort_order: idx,
+              alt_text: webpName,
+            });
+          } else {
+            imagesToCreate.push({
+              ...img,
+              listing_id: internalId,
+              sort_order: idx,
+              alt_text: webpName,
+            });
+          }
+        });
+        // Bulk create new images
+        if (imagesToCreate.length) {
+          try {
+            await bulkCreateListingImages(imagesToCreate, jwt);
+          } catch (err: any) {
+            toast.error(
+              t("image_upload_failed") +
+                (err?.message ? `: ${err.message}` : "")
+            );
+          }
+        }
+        // Update sort_order for existing images
+        if (imagesToUpdate.length) {
+          try {
+            const { updateListingImage } = await import(
+              "@/lib/api/listingImages"
+            );
+            await Promise.all(
+              imagesToUpdate.map((img, idx) =>
+                updateListingImage(img.id as string | number, {
+                  listing_id: (img as any).listing_id,
+                  url: img.url,
+                  alt_text: img.alt_text,
+                  sort_order: idx,
+                })
+              )
+            );
+          } catch (err: any) {
+            toast.error(
+              t("image_upload_failed") +
+                (err?.message ? `: ${err.message}` : "")
+            );
+          }
+        }
+      }
+    }
+
     try {
       let result;
-      if (mode === "edit" && initialValues && initialValues.listing_id) {
-        // Get JWT for current user for edit
-        const jwt = await getCurrentUserJWT();
-        result = await updateListing(initialValues.listing_id, cleanedValues, jwt || undefined);
+      let listingId;
+      if (mode === "edit") {
+        // In edit mode, update listing details first, then images
+        if (!initialValues?.id || !initialValues?.listing_id) {
+          throw new Error("Missing listing id for edit mode");
+        }
+        await updateListing(initialValues.listing_id, cleanedValues, jwt || undefined);
+        await moveAndUploadImages({
+          internalId: initialValues.id,
+          publicListingId: initialValues.listing_id,
+          jwt: jwt || undefined,
+        });
         toast.success(t("listing_updated_success"));
       } else {
-        // Get JWT for current user
-        const jwt = await getCurrentUserJWT();
+        // In create mode, create the listing first, then upload images
+        const jwtVal = await getCurrentUserJWT();
+        jwt = jwtVal ?? undefined;
         result = await createListing(cleanedValues, jwt || undefined);
+        listingId = result.id;
+        const listingListingId = result.listing_id;
+        if (listingId == null || !listingListingId) {
+          throw new Error("Listing ID is missing after creation.");
+        }
+        await moveAndUploadImages({
+          internalId: listingId,
+          publicListingId: listingListingId,
+          jwt: jwt || undefined,
+        });
         toast.success(t("listing_created_success"));
       }
-      router.push(`/${locale}/dashboard/listings`);
+      router.push(
+        `/${locale}/dashboard/listings/${context || ""}`.replace(/\/$/, "")
+      );
       // Note: We don't reset isManuallyLoading here - let it stay true until navigation
     } catch (error: any) {
       setIsManuallyLoading(false); // Only reset on error
@@ -286,7 +544,7 @@ export default function ListingForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}
-        className="space-y-10"
+        className="space-y-6"
       >
         {/* Property Details Section */}
         <div>
@@ -313,7 +571,11 @@ export default function ListingForm({
               })()}
               <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
                 <Tabs defaultValue="en" className="w-full">
-                  <TabsList className={isLoading ? "pointer-events-none opacity-50" : ""}>
+                  <TabsList
+                    className={
+                      isLoading ? "pointer-events-none opacity-50" : ""
+                    }
+                  >
                     {languages.map((lang) => {
                       const idx = langIdxMap[lang.code];
                       const translations = form.watch("translations") || [];
@@ -435,7 +697,11 @@ export default function ListingForm({
               })()}
               <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
                 <Tabs defaultValue="en" className="w-full">
-                  <TabsList className={isLoading ? "pointer-events-none opacity-50" : ""}>
+                  <TabsList
+                    className={
+                      isLoading ? "pointer-events-none opacity-50" : ""
+                    }
+                  >
                     {languages.map((lang) => {
                       const idx = langIdxMap[lang.code];
                       const translations = form.watch("translations") || [];
@@ -485,7 +751,11 @@ export default function ListingForm({
                                 </FormLabel>
                                 <FormControl>
                                   <textarea
-                                    className={`block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 ${form.formState.isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+                                      form.formState.isSubmitting
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                    }`}
                                     placeholder={`${t(
                                       "description_placeholder"
                                     )} (${lang.label})`}
@@ -550,9 +820,7 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        value={
-                          field.value ? String(field.value) : ""
-                        }
+                        value={field.value ? String(field.value) : ""}
                         disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
@@ -593,9 +861,7 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        value={
-                          field.value ? String(field.value) : ""
-                        }
+                        value={field.value ? String(field.value) : ""}
                         disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
@@ -636,9 +902,7 @@ export default function ListingForm({
                         onValueChange={(val) =>
                           field.onChange(val ? +val : undefined)
                         }
-                        value={
-                          field.value ? String(field.value) : ""
-                        }
+                        value={field.value ? String(field.value) : ""}
                         disabled={form.formState.isSubmitting}
                       >
                         <FormControl>
@@ -699,7 +963,8 @@ export default function ListingForm({
                       />
                     </FormControl>
                     <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
-                      {typeof form.formState.errors.building_size_sqm?.message === "string"
+                      {typeof form.formState.errors.building_size_sqm
+                        ?.message === "string"
                         ? t(form.formState.errors.building_size_sqm.message)
                         : null}
                     </div>
@@ -731,7 +996,8 @@ export default function ListingForm({
                       />
                     </FormControl>
                     <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
-                      {typeof form.formState.errors.land_size_sqm?.message === "string"
+                      {typeof form.formState.errors.land_size_sqm?.message ===
+                      "string"
                         ? t(form.formState.errors.land_size_sqm.message)
                         : null}
                     </div>
@@ -763,7 +1029,8 @@ export default function ListingForm({
                       />
                     </FormControl>
                     <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
-                      {typeof form.formState.errors.bedrooms?.message === "string"
+                      {typeof form.formState.errors.bedrooms?.message ===
+                      "string"
                         ? t(form.formState.errors.bedrooms.message)
                         : null}
                     </div>
@@ -795,7 +1062,8 @@ export default function ListingForm({
                       />
                     </FormControl>
                     <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
-                      {typeof form.formState.errors.bathrooms?.message === "string"
+                      {typeof form.formState.errors.bathrooms?.message ===
+                      "string"
                         ? t(form.formState.errors.bathrooms.message)
                         : null}
                     </div>
@@ -875,7 +1143,11 @@ export default function ListingForm({
                         placeholder={t("year_built_placeholder")}
                         type="number"
                         {...field}
-                        value={field.value === null || field.value === undefined ? "" : field.value}
+                        value={
+                          field.value === null || field.value === undefined
+                            ? ""
+                            : field.value
+                        }
                         disabled={form.formState.isSubmitting}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -884,7 +1156,8 @@ export default function ListingForm({
                       />
                     </FormControl>
                     <div className="min-h-[18px] text-xs leading-tight !mt-0 text-red-600">
-                      {typeof form.formState.errors.year_built?.message === "string"
+                      {typeof form.formState.errors.year_built?.message ===
+                      "string"
                         ? t(form.formState.errors.year_built.message)
                         : null}
                     </div>
@@ -905,9 +1178,7 @@ export default function ListingForm({
                       onValueChange={(val) =>
                         field.onChange(val ? +val : undefined)
                       }
-                      value={
-                        field.value ? String(field.value) : ""
-                      }
+                      value={field.value ? String(field.value) : ""}
                       disabled={form.formState.isSubmitting}
                     >
                       <FormControl>
@@ -935,7 +1206,24 @@ export default function ListingForm({
             </div>
           </div>
         </div>
-        {typeof children === 'function' ? children({ isSubmitting: isLoading }) : children}
+        {/* Supabase Image Manager Section */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">
+            {t("photo_gallery_label")}
+          </h3>
+          <SupabaseImageManager
+            bucket={process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
+            folder={currentUser ? `uploads/${currentUser?.id}/tmp` : undefined}
+            maxFiles={30}
+            maxFileSize={10 * 1024 * 1024}
+            onChange={setUploadedImages}
+            initialImages={uploadedImages}
+            watermarkUrl={watermarkUrl}
+          />
+        </div>
+        {typeof children === "function"
+          ? children({ isSubmitting: isLoading, uploadedImages, currentUser })
+          : children}
       </form>
     </Form>
   );

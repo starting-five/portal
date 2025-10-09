@@ -1,13 +1,5 @@
 const db = require("../db");
 
-// Helper to format translations into { en: '...', id: '...', es: '...' }
-function formatLabels(translations) {
-  return translations.reduce((acc, t) => {
-    acc[t.language_code] = t.name;
-    return acc;
-  }, {});
-}
-
 exports.getAllLookups = async (req, res) => {
   try {
     // Listing Types

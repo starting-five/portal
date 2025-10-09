@@ -1,4 +1,29 @@
 {
+    "AccountButton": {
+        "account": "Cuenta"
+    },
+    "AccountForm": {
+        "account_settings": "Configuración de cuenta",
+        "email": {
+            "label": "Correo electrónico",
+            "placeholder": "Tu correo electrónico"
+        },
+        "name": {
+            "label": "Nombre",
+            "placeholder": "Tu nombre"
+        },
+        "phone": {
+            "label": "Número de teléfono",
+            "placeholder": "Tu número de teléfono"
+        },
+        "save_changes": "Guardar cambios",
+        "watermark_label": "Imagen de marca de agua (solo PNG)"
+    },
+    "AccountFormWrapper": {
+        "no_access_token": "No se encontró el token de acceso. Por favor, inicia sesión nuevamente.",
+        "profile_updated": "¡Perfil actualizado!",
+        "update_failed": "No se pudo actualizar el perfil: {error}"
+    },
     "AuthForm": {
         "buttons": {
             "login": "Iniciar sesión",
@@ -69,6 +94,30 @@
             "title": "Establece una nueva contraseña"
         }
     },
+    "Dashboard": {
+        "defaultName": "Agente",
+        "editProfile": "Editar Perfil",
+        "noEmail": "No hay correo electrónico",
+        "profileTitle": "Tu Perfil"
+    },
+    "Dropzone": {
+        "drag_drop_or_select": "Arrastre y suelte o",
+        "failed_to_upload": "Error al subir: {error}",
+        "file_too_large": "El archivo es más grande que {max} (Tamaño: {size})",
+        "max_file_size": "Tamaño máximo de archivo: {size}",
+        "max_files_error": "Solo puede subir hasta {maxFiles} archivos, elimine {removeCount} archivo{pluralSuffix}.",
+        "optimized_for_web": "Las imágenes se optimizan automáticamente para su visualización en la web",
+        "select_label": "seleccione {count, plural, one {archivo} other {archivos}}",
+        "successfully_uploaded": "Archivo(s) subido(s) correctamente: {count}",
+        "successfully_uploaded_file": "Archivo subido correctamente",
+        "to_upload": "para subir",
+        "upload_files": "Subir archivos",
+        "upload_label": "Subir {maxFiles, plural, one {archivo} other {{maxFiles} archivos}}",
+        "uploading": "Subiendo...",
+        "uploading_file": "Subiendo archivo...",
+        "watermark_png_limit": "Solo formato PNG, tamaño máximo de archivo 2MB",
+        "watermark_usage": "Esta imagen se usará como marca de agua en tus anuncios"
+    },
     "Features": {
         "beachfront": "Frente a la playa",
         "cliff_top": "Acantilado",
@@ -82,9 +131,45 @@
         "rice_view": "Vista al arrozal",
         "sunset_view": "Vista al atardecer"
     },
+    "FiltersBar": {
+        "advancedFilter": "Filtros",
+        "advancedPropertyFilters": "Filtros avanzados de propiedad",
+        "applyFilters": "Aplicar filtros",
+        "basicFilters": "Filtros básicos",
+        "bathrooms": "Baños",
+        "bedrooms": "Habitaciones",
+        "bedsBaths": "Habitaciones y Baños",
+        "cancel": "Cancelar",
+        "clearAllFilters": "Borrar todos los filtros",
+        "featuresAmenities": "Características y comodidades",
+        "listingStatus": "Estado del listado",
+        "location": "Ubicación",
+        "maxPrice": "Precio máximo",
+        "minPrice": "Precio mínimo",
+        "noLocations": "No se encontraron ubicaciones.",
+        "ownershipType": "Tipo de propiedad",
+        "priceRange": "Rango de Precios",
+        "propertyType": "Tipo de Propiedad",
+        "search": "Buscar",
+        "searchLocations": "Buscar ubicaciones..."
+    },
     "HomePage": {
         "description": "Esta es la página de inicio donde puedes encontrar las últimas actualizaciones y características.",
         "title": "Bienvenido a Nuestra Aplicación"
+    },
+    "ListingDetail": {
+        "about_heading": "Acerca de esta propiedad",
+        "bathrooms": "Baños",
+        "bedrooms": "Habitaciones",
+        "building_size": "Superficie construida",
+        "features_heading": "Características",
+        "land_size": "Superficie de terreno",
+        "overview_heading": "Resumen",
+        "ownership": "Tipo de propiedad",
+        "photos": "Fotos",
+        "property_id": "ID de la propiedad",
+        "property_type": "Tipo de propiedad",
+        "year_built": "Año de construcción"
     },
     "ListingForm": {
         "bathrooms_label": "Baños",
@@ -100,19 +185,23 @@
         "description_placeholder": "Descripción corta",
         "features_label": "Características",
         "form_invalid": "Por favor corrige los errores destacados",
+        "image_move_failed": "No se pudo mover la imagen",
+        "image_upload_failed": "No se pudo subir la imagen",
+        "images_header": "Imágenes",
         "land_size_label": "Superficie de terreno (m²)",
         "land_size_placeholder": "ej. 300",
         "listing_create_failed": "No se pudo crear el listado.",
-        "listing_created_success": "¡Listado creado exitosamente!",
+        "listing_created_success": "¡Propiedad creada exitosamente!",
         "listing_type_label": "Tipo de anuncio *",
         "listing_type_placeholder": "Selecciona tipo de anuncio",
         "listing_update_failed": "No se pudo actualizar el listado.",
-        "listing_updated_success": "¡Listado actualizado exitosamente!",
+        "listing_updated_success": "¡Propiedad actualizada exitosamente!",
         "location_label": "Ubicación *",
         "location_placeholder": "Selecciona ubicación",
         "non_negative_error": "El valor debe ser cero o mayor.",
         "ownership_type_label": "Tipo de propiedad *",
         "ownership_type_placeholder": "Selecciona tipo de propiedad",
+        "photo_gallery_label": "Galería de Fotos",
         "price_label": "Precio *",
         "price_placeholder": "ej. 250000",
         "pricing_status_header": "Precio y estado",
@@ -135,30 +224,49 @@
     "LocaleSwitcher": {
         "aria_label": "Cambiar idioma"
     },
+    "LogoutButton": {
+        "logout": "Cerrar sesión"
+    },
     "metadata": {
         "description": "Un portal para gestionar listados de propiedades",
         "title": "Portal de Propiedades"
     },
     "MyListings": {
+        "active_description": "Estas son tus propiedades activas. Puedes editarlas, archivarlas o gestionarlas desde aquí.",
+        "active_empty": "No tienes propiedades activas.",
+        "active_title": "Propiedades Activas",
         "add_listing": "Agregar Listado",
+        "archive_description": "Estas son tus propiedades archivadas. Puedes restaurarlas o eliminarlas permanentemente desde aquí.",
+        "archive_empty": "No tienes propiedades archivadas.",
+        "archive_title": "Propiedades Archivadas",
         "description": "Ver y gestionar mis listados de propiedades",
+        "drafts_description": "Estas son tus propiedades en borrador. Puedes seguir editando y publicarlas cuando estén listas.",
+        "drafts_empty": "No tienes propiedades en borrador.",
+        "drafts_title": "Propiedades en Borrador",
         "empty_message": "Aún no tienes listados. ¡Comienza agregando tu primera propiedad!",
         "error": "Error al cargar los listados. Por favor, inténtalo de nuevo más tarde.",
         "title": "Mis Listados"
     },
     "PropertyCard": {
-        "delete_title": "Eliminar listado",
-        "delete_confirm": "¿Estás seguro de que deseas eliminar este listado? Esta acción no se puede deshacer.",
         "cancel": "Cancelar",
         "delete": "Eliminar",
+        "delete_confirm": "¿Estás seguro de que deseas eliminar este listado? Esta acción no se puede deshacer.",
+        "delete_failed": "No se pudo eliminar el listado. Por favor, inténtalo de nuevo.",
+        "delete_title": "Eliminar listado",
         "deleted_success": "¡Listado eliminado exitosamente!",
-        "delete_failed": "No se pudo eliminar el listado. Por favor, inténtalo de nuevo."
+        "no_photos_available": "No hay fotos disponibles"
     },
     "Sidebar": {
+        "active": "Publicados",
+        "archive": "Archivados",
+        "drafts": "Borradores",
         "home": "Inicio",
         "my_listings": "Mis Listados",
         "new_listing": "Nuevo Listado",
         "profile": "Perfil",
         "settings": "Configuraciones"
+    },
+    "SupabaseImageManager": {
+        "delete_image_tooltip": "Eliminar imagen"
     }
 }

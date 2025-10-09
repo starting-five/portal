@@ -1,7 +1,40 @@
-const express = require('express');
+const express = require("express");
+const listingsController = require("../controllers/listings.controller");
+const { requireUser } = require("../middleware/auth");
+const listingImageController = require("../controllers/listing_image.controller");
+
 const router = express.Router();
-const listingsController = require('../controllers/listings.controller');
-const { requireUser } = require('../middleware/auth');
+/**
+ * @swagger
+ * /listings/counts:
+ *   get:
+ *     summary: Get counts of listings per status for a user
+ *     tags: [Listings]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User ID to filter listings
+ *     responses:
+ *       200:
+ *         description: Counts of listings per status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 counts:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: integer
+ *       400:
+ *         description: Missing user_id
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/counts", listingsController.getListingCounts);
 
 /**
  * @swagger
@@ -18,13 +51,77 @@ const { requireUser } = require('../middleware/auth');
  *     tags: [Listings]
  *     parameters:
  *       - in: query
- *         name: lang
+ *         name: featuresId
  *         schema:
  *           type: string
- *           enum: [en, id, es]
- *           default: en
  *         required: false
- *         description: Language code for listing title and description (en, id, es). Defaults to English with fallback.
+ *         description: Comma-separated feature IDs (e.g., "1,2,3") for multi-feature filtering.
+ *       - in: query
+ *         name: user_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter listings by user ID.
+ *       - in: query
+ *         name: ownership_type_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Comma-separated ownership type IDs (e.g., "1,2,3") for multi-type filtering.
+ *       - in: query
+ *         name: listing_type_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Comma-separated listing type IDs (e.g., "1,2,3") for multi-type filtering.
+ *       - in: query
+ *         name: listing_status_id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Comma-separated listing status IDs (e.g., "1,2,3") for multi-status filtering.
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Minimum price filter.
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Maximum price filter.
+ *       - in: query
+ *         name: locationId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Comma-separated location IDs (e.g., "1,2,3") for multi-location filtering.
+ *       - in: query
+ *         name: bedrooms
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter listings by number of bedrooms.
+ *       - in: query
+ *         name: bathrooms
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Filter listings by number of bathrooms.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Limit the number of results returned.
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Offset for pagination.
  *     responses:
  *       200:
  *         description: A list of listings.
@@ -38,7 +135,7 @@ const { requireUser } = require('../middleware/auth');
  *         description: Internal server error
  */
 // GET /api/v1/listings - Retrieve all listings
-router.get('/', listingsController.getAllListings);
+router.get("/", listingsController.getAllListings);
 
 /**
  * @swagger
@@ -72,7 +169,7 @@ router.get('/', listingsController.getAllListings);
  *         description: Listing not found
  */
 // GET /api/v1/listings/:listing_id - Retrieve a single listing
-router.get('/:listing_id', listingsController.getListingById);
+router.get("/:listing_id", listingsController.getListingById);
 
 /**
  * @swagger
@@ -159,7 +256,32 @@ router.get('/:listing_id', listingsController.getListingById);
  *               $ref: '#/components/schemas/Listing'
  */
 // POST /api/v1/listings - Create a new listing (requires authentication)
-router.post('/', requireUser, listingsController.createListing);
+router.post("/", requireUser, listingsController.createListing);
+/**
+ * @swagger
+ * /listings/{listingId}/images:
+ *   get:
+ *     summary: Retrieve all images for a specific listing
+ *     tags: [Listings]
+ *     parameters:
+ *       - in: path
+ *         name: listingId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Public ID of the listing
+ *     responses:
+ *       200:
+ *         description: A list of images for the listing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ListingImage'
+ */
+// GET /api/v1/listings/:listingId/images - Retrieve all images for a listing
+router.get("/:listingId/images", listingImageController.getImagesForListing);
 
 /**
  * @swagger
@@ -236,7 +358,7 @@ router.post('/', requireUser, listingsController.createListing);
  *         description: Listing not found
  */
 // PUT /api/v1/listings/:listing_id - Update a listing (requires authentication)
-router.put('/:listing_id', requireUser, listingsController.updateListing);
+router.put("/:listing_id", requireUser, listingsController.updateListing);
 
 /**
  * @swagger
@@ -258,6 +380,6 @@ router.put('/:listing_id', requireUser, listingsController.updateListing);
  *         description: Listing not found
  */
 // DELETE /api/v1/listings/:listing_id - Delete a listing (requires authentication)
-router.delete('/:listing_id', requireUser, listingsController.deleteListing);
+router.delete("/:listing_id", requireUser, listingsController.deleteListing);
 
 module.exports = router;

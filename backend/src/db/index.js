@@ -47,5 +47,6 @@ pool.connect((err, client, release) => {
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
-  pool, // Export the pool itself if you need direct access (e.g., for transactions)
+  pool, // Export default the pool itself if you need direct access (e.g., for transactions)
 };
+  

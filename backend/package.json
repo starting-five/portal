@@ -7,19 +7,25 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "db:setup": "node src/db/setup.js",
-    "db:seed": "node src/db/seed.js",
-    "db:insertTestData": "node src/db/insertTestListings.js"
+    "db:seed": "node src/db/seed.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "formidable": "^3.5.4",
     "jose": "^6.0.12",
     "pg": "^8.16.2",
+    "sharp": "^0.34.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-node": "^11.1.0",
     "nodemon": "^3.1.4"
   }
 }

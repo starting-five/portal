@@ -2,9 +2,10 @@
 
 import QueryClientWrapper from "@/components/QueryClientWrapper";
 import { LookupsProvider } from "@/store/LookupsProvider";
-import { ReduxProvider } from "@/store/ReduxProvider";
+import { store } from "@/store/store";
 import { NextIntlClientProvider } from "next-intl";
 import React from "react";
+import { Provider } from "react-redux";
 
 interface ClientProvidersProps {
   children: React.ReactNode;
@@ -20,12 +21,16 @@ export default function ClientProviders({
   messages,
 }: ClientProvidersProps) {
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <ReduxProvider>
+    <Provider store={store}>
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone="UTC"
+      >
         <LookupsProvider lookups={lookups}>
           <QueryClientWrapper>{children}</QueryClientWrapper>
         </LookupsProvider>
-      </ReduxProvider>
-    </NextIntlClientProvider>
+      </NextIntlClientProvider>
+    </Provider>
   );
 }

@@ -1,4 +1,29 @@
 {
+    "AccountButton": {
+        "account": "Akun"
+    },
+    "AccountForm": {
+        "account_settings": "Pengaturan Akun",
+        "email": {
+            "label": "Email",
+            "placeholder": "nama@perusahaan.com"
+        },
+        "name": {
+            "label": "Nama",
+            "placeholder": "Nama Anda"
+        },
+        "phone": {
+            "label": "Nomor Telepon",
+            "placeholder": "Nomor telepon Anda"
+        },
+        "save_changes": "Simpan Perubahan",
+        "watermark_label": "Gambar Watermark (hanya PNG)"
+    },
+    "AccountFormWrapper": {
+        "no_access_token": "Token akses tidak ditemukan. Silakan login kembali.",
+        "profile_updated": "Profil berhasil diperbarui!",
+        "update_failed": "Gagal memperbarui profil: {error}"
+    },
     "AuthForm": {
         "buttons": {
             "login": "Masuk",
@@ -19,7 +44,7 @@
         "fields": {
             "email": {
                 "label": "Email",
-                "placeholder": "anda@contoh.com"
+                "placeholder": "nama@perusahaan.com"
             },
             "password": {
                 "hide": "Sembunyikan kata sandi",
@@ -69,6 +94,30 @@
             "title": "Buat Kata Sandi Baru"
         }
     },
+    "Dashboard": {
+        "defaultName": "Agen Properti",
+        "editProfile": "Edit Profil",
+        "noEmail": "Belum ada email",
+        "profileTitle": "Profil Anda"
+    },
+    "Dropzone": {
+        "drag_drop_or_select": "Seret dan jatuhkan atau",
+        "failed_to_upload": "Gagal mengunggah: {error}",
+        "file_too_large": "File lebih besar dari {max} (Ukuran: {size})",
+        "max_file_size": "Ukuran file maksimum: {size}",
+        "max_files_error": "Anda hanya dapat mengunggah hingga {maxFiles} file, silakan hapus {removeCount} file{pluralSuffix}.",
+        "optimized_for_web": "Foto secara otomatis dioptimalkan untuk tampilan web",
+        "select_label": "pilih {count, plural, one {file} other {file}}",
+        "successfully_uploaded": "Berhasil mengunggah {count} file{count, plural, one {} other {s}}",
+        "successfully_uploaded_file": "Berhasil mengunggah file",
+        "to_upload": "untuk mengunggah",
+        "upload_files": "Unggah file",
+        "upload_label": "Unggah {maxFiles, plural, one {file} other {{maxFiles} file}}",
+        "uploading": "Sedang mengunggah...",
+        "uploading_file": "Sedang mengunggah file...",
+        "watermark_png_limit": "Format PNG saja, ukuran maksimum file 2MB",
+        "watermark_usage": "Gambar ini akan digunakan sebagai watermark pada listing Anda"
+    },
     "Features": {
         "beachfront": "Tepi Pantai",
         "cliff_top": "Tepi Tebing",
@@ -82,9 +131,45 @@
         "rice_view": "Pemandangan Sawah",
         "sunset_view": "Pemandangan Matahari Terbenam"
     },
+    "FiltersBar": {
+        "advancedFilter": "Filter",
+        "advancedPropertyFilters": "Filter Properti Detail",
+        "applyFilters": "Terapkan Filter",
+        "basicFilters": "Filter Dasar",
+        "bathrooms": "Kamar Mandi",
+        "bedrooms": "Kamar Tidur",
+        "bedsBaths": "Kamar Tidur/Mandi",
+        "cancel": "Batal",
+        "clearAllFilters": "Hapus Semua Filter",
+        "featuresAmenities": "Fitur & Fasilitas",
+        "listingStatus": "Status Listing",
+        "location": "Lokasi",
+        "maxPrice": "Harga Maksimum",
+        "minPrice": "Harga Minimum",
+        "noLocations": "Tidak ada lokasi ditemukan.",
+        "ownershipType": "Jenis Kepemilikan",
+        "priceRange": "Rentang Harga",
+        "propertyType": "Tipe Properti",
+        "search": "Cari",
+        "searchLocations": "Cari lokasi..."
+    },
     "HomePage": {
         "description": "Ini adalah halaman beranda di mana Anda dapat menemukan pembaruan dan fitur terbaru.",
         "title": "Selamat datang di Aplikasi Kami"
+    },
+    "ListingDetail": {
+        "about_heading": "Tentang properti ini",
+        "bathrooms": "Kamar mandi",
+        "bedrooms": "Kamar tidur",
+        "building_size": "Luas bangunan",
+        "features_heading": "Fitur",
+        "land_size": "Luas tanah",
+        "overview_heading": "Ringkasan",
+        "ownership": "Kepemilikan",
+        "photos": "Foto",
+        "property_id": "ID Properti",
+        "property_type": "Tipe properti",
+        "year_built": "Tahun dibangun"
     },
     "ListingForm": {
         "bathrooms_label": "Kamar Mandi",
@@ -100,19 +185,23 @@
         "description_placeholder": "Deskripsi singkat",
         "features_label": "Fitur",
         "form_invalid": "Silakan perbaiki kesalahan yang ditandai",
+        "image_move_failed": "Gagal memindahkan gambar",
+        "image_upload_failed": "Gagal mengunggah gambar",
+        "images_header": "Gambar",
         "land_size_label": "Luas Tanah (m²)",
         "land_size_placeholder": "mis. 300",
         "listing_create_failed": "Gagal membuat listing.",
-        "listing_created_success": "Listing berhasil dibuat!",
+        "listing_created_success": "Properti berhasil dibuat!",
         "listing_type_label": "Jenis Listing *",
         "listing_type_placeholder": "Pilih jenis listing",
         "listing_update_failed": "Gagal memperbarui listing.",
-        "listing_updated_success": "Listing berhasil diperbarui!",
+        "listing_updated_success": "Properti berhasil diperbarui!",
         "location_label": "Lokasi *",
         "location_placeholder": "Pilih lokasi",
         "non_negative_error": "Nilai harus nol atau lebih besar.",
         "ownership_type_label": "Jenis Kepemilikan *",
         "ownership_type_placeholder": "Pilih jenis kepemilikan",
+        "photo_gallery_label": "Galeri Foto",
         "price_label": "Harga *",
         "price_placeholder": "mis. 250000",
         "pricing_status_header": "Harga & Status",
@@ -135,30 +224,49 @@
     "LocaleSwitcher": {
         "aria_label": "Ganti bahasa"
     },
+    "LogoutButton": {
+        "logout": "Keluar"
+    },
     "metadata": {
         "description": "Portal untuk mengelola listing properti",
         "title": "Portal Properti"
     },
     "MyListings": {
+        "active_description": "Ini adalah properti aktif Anda. Anda dapat mengedit, mengarsipkan, atau mengelolanya di sini.",
+        "active_empty": "Anda tidak memiliki properti aktif.",
+        "active_title": "Properti Aktif",
         "add_listing": "Tambahkan Listing",
+        "archive_description": "Ini adalah properti yang telah diarsipkan. Anda dapat memulihkan atau menghapusnya secara permanen di sini.",
+        "archive_empty": "Anda tidak memiliki properti yang diarsipkan.",
+        "archive_title": "Properti yang Diarsipkan",
         "description": "Lihat dan kelola listing properti saya",
+        "drafts_description": "Ini adalah properti draft Anda. Anda dapat melanjutkan mengedit dan mempublikasikannya saat sudah siap.",
+        "drafts_empty": "Anda tidak memiliki properti draft.",
+        "drafts_title": "Properti Draft",
         "empty_message": "Anda belum memiliki listing. Mulai dengan menambahkan properti pertama Anda!",
         "error": "Gagal memuat listing. Silakan coba lagi nanti.",
         "title": "Listing Saya"
     },
     "PropertyCard": {
-        "delete_title": "Hapus Listing",
-        "delete_confirm": "Apakah Anda yakin ingin menghapus listing ini? Tindakan ini tidak dapat dibatalkan.",
         "cancel": "Batal",
         "delete": "Hapus",
+        "delete_confirm": "Apakah Anda yakin ingin menghapus listing ini? Tindakan ini tidak dapat dibatalkan.",
+        "delete_failed": "Gagal menghapus listing. Silakan coba lagi.",
+        "delete_title": "Hapus Listing",
         "deleted_success": "Listing berhasil dihapus!",
-        "delete_failed": "Gagal menghapus listing. Silakan coba lagi."
+        "no_photos_available": "Tidak ada foto tersedia"
     },
     "Sidebar": {
+        "active": "Aktif",
+        "archive": "Arsip",
+        "drafts": "Draft",
         "home": "Beranda",
         "my_listings": "Listing Saya",
         "new_listing": "Listing Baru",
         "profile": "Profil",
         "settings": "Pengaturan"
+    },
+    "SupabaseImageManager": {
+        "delete_image_tooltip": "Hapus foto"
     }
 }

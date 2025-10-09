@@ -2,7 +2,7 @@
 # This stage installs all dependencies, including devDependencies,
 # needed for the build process. It's a separate stage to leverage
 # Docker's layer caching. It only re-runs if package.json or
-# pnpm-lock.yaml change.
+# package-lock.json change.
 FROM node:20-alpine AS deps
 
 # Some Next.js dependencies require this for native binaries.
@@ -10,19 +10,32 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Install pnpm globally.
-RUN npm install -g pnpm
-
 # Copy package manager files.
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json* ./
 
-# Install all dependencies.
-RUN pnpm install --frozen-lockfile
+# Install all dependencies (including devDependencies for build).
+RUN npm ci
 
 # ----------------- STAGE 2: BUILDER -----------------
 # This stage builds the Next.js application. It inherits from the 'deps'
-# stage, so it has access to pnpm and all the installed node_modules.
+# stage, so it has access to npm and all the installed node_modules.
 FROM deps AS builder
+
+# Accept build arguments for environment variables
+ARG NEXT_PUBLIC_API_URL_SERVER
+ARG NEXT_PUBLIC_API_URL_CLIENT
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
+# Set environment variables from build arguments
+ENV NEXT_PUBLIC_API_URL_SERVER=${NEXT_PUBLIC_API_URL_SERVER}
+ENV NEXT_PUBLIC_API_URL_CLIENT=${NEXT_PUBLIC_API_URL_CLIENT}
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+ENV NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET=${NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
 
 # Copy the rest of the source code.
 COPY . .
@@ -31,7 +44,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Run the build command from your package.json.
-RUN pnpm build
+RUN npm run build
 
 # ----------------- STAGE 3: RUNNER -----------------
 # This is the final, minimal production image. It starts from a clean
