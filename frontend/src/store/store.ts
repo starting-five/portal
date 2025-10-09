@@ -2,12 +2,13 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
 import authUserReducer from "./authUserSlice";
 import lookupsReducer from "./lookupsSlice";
+import selectedListingReducer from "./selectedListingSlice";
 
 // Combine all your reducers
 const combinedReducer = combineReducers({
   lookups: lookupsReducer,
   authUser: authUserReducer,
-  // add other reducers here
+  selectedListing: selectedListingReducer,
 });
 
 // Root reducer to handle HYDRATE

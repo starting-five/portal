@@ -157,6 +157,20 @@
         "description": "Ini adalah halaman beranda di mana Anda dapat menemukan pembaruan dan fitur terbaru.",
         "title": "Selamat datang di Aplikasi Kami"
     },
+    "ListingDetail": {
+        "about_heading": "Tentang properti ini",
+        "bathrooms": "Kamar mandi",
+        "bedrooms": "Kamar tidur",
+        "building_size": "Luas bangunan",
+        "features_heading": "Fitur",
+        "land_size": "Luas tanah",
+        "overview_heading": "Ringkasan",
+        "ownership": "Kepemilikan",
+        "photos": "Foto",
+        "property_id": "ID Properti",
+        "property_type": "Tipe properti",
+        "year_built": "Tahun dibangun"
+    },
     "ListingForm": {
         "bathrooms_label": "Kamar Mandi",
         "bathrooms_placeholder": "mis. 2",

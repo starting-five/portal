@@ -157,6 +157,20 @@
         "description": "This is the home page where you can find the latest updates and features.",
         "title": "Welcome to Our Application"
     },
+    "ListingDetail": {
+        "about_heading": "About this property",
+        "bathrooms": "Bathrooms",
+        "bedrooms": "Bedrooms",
+        "building_size": "Building size",
+        "features_heading": "Features",
+        "land_size": "Land size",
+        "overview_heading": "Overview",
+        "ownership": "Ownership",
+        "photos": "Photos",
+        "property_id": "Property ID",
+        "property_type": "Property type",
+        "year_built": "Year built"
+    },
     "ListingForm": {
         "bathrooms_label": "Bathrooms",
         "bathrooms_placeholder": "e.g. 2",

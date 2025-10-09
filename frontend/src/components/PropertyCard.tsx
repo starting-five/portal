@@ -38,7 +38,8 @@ import React from "react";
 import { deleteListing } from "@/lib/api/listings";
 import { getCurrentUserJWT } from "@/lib/supabase/getCurrentUserJWT";
 import type { ListingImage } from "@/lib/types";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setSelectedListing } from "@/store/selectedListingSlice";
 import { toast } from "sonner";
 
 // Property type definition
@@ -77,6 +78,7 @@ export default function PropertyCard({
 }: PropertyCardProps) {
   const tCard = useTranslations("PropertyCard");
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isFading, setIsFading] = React.useState(false);
   const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
@@ -214,6 +216,7 @@ export default function PropertyCard({
   const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Prevent navigation if clicking edit/delete buttons
     if ((e.target as HTMLElement).closest(".property-action")) return;
+    dispatch(setSelectedListing(property));
     router.push(
       `/${locale || "en"}/dashboard/listings/${context ? `${context}/` : ""}${
         property.listing_id

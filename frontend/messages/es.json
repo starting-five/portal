@@ -157,6 +157,20 @@
         "description": "Esta es la página de inicio donde puedes encontrar las últimas actualizaciones y características.",
         "title": "Bienvenido a Nuestra Aplicación"
     },
+    "ListingDetail": {
+        "about_heading": "Acerca de esta propiedad",
+        "bathrooms": "Baños",
+        "bedrooms": "Habitaciones",
+        "building_size": "Superficie construida",
+        "features_heading": "Características",
+        "land_size": "Superficie de terreno",
+        "overview_heading": "Resumen",
+        "ownership": "Tipo de propiedad",
+        "photos": "Fotos",
+        "property_id": "ID de la propiedad",
+        "property_type": "Tipo de propiedad",
+        "year_built": "Año de construcción"
+    },
     "ListingForm": {
         "bathrooms_label": "Baños",
         "bathrooms_placeholder": "ej. 2",
