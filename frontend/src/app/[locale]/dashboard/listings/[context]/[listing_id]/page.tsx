@@ -4,10 +4,68 @@ import DetailsGrid from "@/components/DetailsGrid";
 import ListingGallery from "@/components/ListingGallery";
 import type { Property } from "@/components/PropertyCard";
 import { useAppSelector } from "@/store/hooks";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+// Expandable description component
+function ExpandableDescription({ description }: { description: string }) {
+  const t = useTranslations("ListingDetail");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const CHAR_LIMIT = 600;
+  
+  // Check if description needs truncation
+  const needsTruncation = description.length > CHAR_LIMIT;
+  
+  // Get truncated text at a natural break point (end of sentence or word)
+  const getTruncatedText = () => {
+    if (!needsTruncation) return description;
+    
+    let truncated = description.substring(0, CHAR_LIMIT);
+    // Try to break at the end of a sentence
+    const lastPeriod = truncated.lastIndexOf('.');
+    if (lastPeriod > CHAR_LIMIT * 0.7) {
+      return description.substring(0, lastPeriod + 1);
+    }
+    
+    // Otherwise break at the end of a word
+    const lastSpace = truncated.lastIndexOf(' ');
+    if (lastSpace > 0) {
+      return description.substring(0, lastSpace) + '...';
+    }
+    
+    return truncated + '...';
+  };
+
+  const displayText = isExpanded ? description : getTruncatedText();
+
+  return (
+    <div className="text-gray-600 text-sm leading-6">
+      <div className="whitespace-pre-wrap">
+        {displayText}
+      </div>
+      {needsTruncation && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="mt-4 text-gray-600 hover:text-gray-800 text-sm transition-colors duration-200 flex items-center gap-1 cursor-pointer"
+        >
+          {isExpanded ? (
+            <>
+              {t("show_less")}
+              <ChevronUp size={14} />
+            </>
+          ) : (
+            <>
+              {t("show_more")}
+              <ChevronDown size={14} />
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function ListingDetailPage() {
   const reduxListing = useAppSelector((state) => state.selectedListing.current);
@@ -170,7 +228,11 @@ export default function ListingDetailPage() {
         </div>
       </div>
 
-      <ListingGallery images={listing.images || []}>
+      <ListingGallery 
+        images={listing.images?.map(img => img.url) || []} 
+        youtubeUrl={listing.youtube_url || undefined}
+        kuulaUrl={listing.kuula_url || undefined}
+      >
         <div className="mt-6 text-left">
           {/* Structured details grid (no location/price duplication) */}
           <DetailsGrid
@@ -186,9 +248,7 @@ export default function ListingDetailPage() {
                 {t("about_heading")}
               </h2>
               {listing.description ? (
-                <div className="text-gray-600 whitespace-pre-wrap text-sm leading-6">
-                  {listing.description}
-                </div>
+                <ExpandableDescription description={listing.description} />
               ) : (
                 <div className="text-gray-500 text-sm">
                   No description provided.

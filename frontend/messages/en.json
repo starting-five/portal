@@ -163,12 +163,17 @@
         "bedrooms": "Bedrooms",
         "building_size": "Building size",
         "features_heading": "Features",
+        "gallery": "Gallery",
         "land_size": "Land size",
         "overview_heading": "Overview",
         "ownership": "Ownership",
         "photos": "Photos",
         "property_id": "Property ID",
         "property_type": "Property type",
+        "show_less": "Less",
+        "show_more": "More",
+        "video": "Video",
+        "virtualTour": "Virtual Tour",
         "year_built": "Year built"
     },
     "ListingForm": {
@@ -188,6 +193,9 @@
         "image_move_failed": "Failed to move image",
         "image_upload_failed": "Failed to upload image",
         "images_header": "Images",
+        "invalid_url": "Please enter a valid URL",
+        "kuula_url_label": "Virtual Tour URL (Kuula)",
+        "kuula_url_placeholder": "https://kuula.co/post/...",
         "land_size_label": "Land Size (sqm)",
         "land_size_placeholder": "e.g. 300",
         "listing_create_failed": "Failed to create listing.",
@@ -198,6 +206,7 @@
         "listing_updated_success": "Listing updated successfully!",
         "location_label": "Location *",
         "location_placeholder": "Select location",
+        "media_content_label": "Media Content",
         "non_negative_error": "Value must be zero or greater.",
         "ownership_type_label": "Ownership Type *",
         "ownership_type_placeholder": "Select ownership type",
@@ -219,7 +228,9 @@
         "title_new": "Add New Listing",
         "title_placeholder": "Property title",
         "year_built_label": "Year Built",
-        "year_built_placeholder": "e.g. 2015"
+        "year_built_placeholder": "e.g. 2015",
+        "youtube_url_label": "YouTube Video URL",
+        "youtube_url_placeholder": "https://www.youtube.com/watch?v=..."
     },
     "LocaleSwitcher": {
         "aria_label": "Change language"
