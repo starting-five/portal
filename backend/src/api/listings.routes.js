@@ -218,6 +218,12 @@ router.get("/:listing_id", listingsController.getListingById);
  *                 type: number
  *               year_built:
  *                 type: integer
+ *               youtube_url:
+ *                 type: string
+ *                 description: YouTube video URL for the listing
+ *               kuula_url:
+ *                 type: string
+ *                 description: Kuula virtual tour URL for the listing
  *               status_id:
  *                 type: integer
  *               features:
@@ -313,6 +319,12 @@ router.get("/:listingId/images", listingImageController.getImagesForListing);
  *                 type: integer
  *               price:
  *                 type: number
+ *               youtube_url:
+ *                 type: string
+ *                 description: YouTube video URL for the listing
+ *               kuula_url:
+ *                 type: string
+ *                 description: Kuula virtual tour URL for the listing
  *               images:
  *                 type: array
  *                 items:

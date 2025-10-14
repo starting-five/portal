@@ -163,12 +163,17 @@
         "bedrooms": "Kamar tidur",
         "building_size": "Luas bangunan",
         "features_heading": "Fitur",
+        "gallery": "Galeri",
         "land_size": "Luas tanah",
         "overview_heading": "Ringkasan",
         "ownership": "Kepemilikan",
         "photos": "Foto",
         "property_id": "ID Properti",
         "property_type": "Tipe properti",
+        "show_less": "Kurang",
+        "show_more": "Lebih",
+        "video": "Video",
+        "virtualTour": "Tur Virtual",
         "year_built": "Tahun dibangun"
     },
     "ListingForm": {
@@ -188,6 +193,9 @@
         "image_move_failed": "Gagal memindahkan gambar",
         "image_upload_failed": "Gagal mengunggah gambar",
         "images_header": "Gambar",
+        "invalid_url": "Harap masukkan URL yang valid",
+        "kuula_url_label": "URL Tur Virtual (Kuula)",
+        "kuula_url_placeholder": "https://kuula.co/post/...",
         "land_size_label": "Luas Tanah (m²)",
         "land_size_placeholder": "mis. 300",
         "listing_create_failed": "Gagal membuat listing.",
@@ -198,6 +206,7 @@
         "listing_updated_success": "Properti berhasil diperbarui!",
         "location_label": "Lokasi *",
         "location_placeholder": "Pilih lokasi",
+        "media_content_label": "Konten Media",
         "non_negative_error": "Nilai harus nol atau lebih besar.",
         "ownership_type_label": "Jenis Kepemilikan *",
         "ownership_type_placeholder": "Pilih jenis kepemilikan",
@@ -219,7 +228,9 @@
         "title_new": "Tambah Listing Baru",
         "title_placeholder": "Judul properti",
         "year_built_label": "Tahun Dibangun",
-        "year_built_placeholder": "mis. 2015"
+        "year_built_placeholder": "mis. 2015",
+        "youtube_url_label": "URL Video YouTube",
+        "youtube_url_placeholder": "https://www.youtube.com/watch?v=..."
     },
     "LocaleSwitcher": {
         "aria_label": "Ganti bahasa"

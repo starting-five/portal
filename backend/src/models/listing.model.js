@@ -172,6 +172,8 @@ const findByPublicId = async (id) => {
       l.land_size_sqm,
       l.building_size_sqm,
       l.year_built,
+      l.youtube_url,
+      l.kuula_url,
       COALESCE((
         SELECT json_agg(li_sub ORDER BY li_sub.sort_order ASC)
         FROM listing_images li_sub
@@ -297,6 +299,8 @@ const updateByPublicId = async (publicListingId, listingData) => {
     "land_size_sqm",
     "building_size_sqm",
     "year_built",
+    "youtube_url",
+    "kuula_url",
   ];
   // Remove currency_id, price_unit, and any other unsupported fields
   const listingDetails = {};
@@ -332,6 +336,8 @@ const updateByPublicId = async (publicListingId, listingData) => {
       "land_size_sqm",
       "building_size_sqm",
       "year_built",
+      "youtube_url",
+      "kuula_url",
     ];
     const updateFields = Object.keys(listingDetails).filter((f) =>
       validListingFields.includes(f)

@@ -79,6 +79,16 @@ const formSchema = z.object({
     .min(0, { message: "non_negative_error" })
     .optional()
     .nullable(), // Must be non-negative if present
+  youtube_url: z.union([
+    z.string().url({ message: "invalid_url" }),
+    z.literal(""),
+    z.undefined()
+  ]).optional(),
+  kuula_url: z.union([
+    z.string().url({ message: "invalid_url" }),
+    z.literal(""),
+    z.undefined()
+  ]).optional(),
   status_id: z.number({ required_error: "required_field" }),
 });
 
@@ -216,6 +226,8 @@ export default function ListingForm({
         initialValues?.year_built !== ""
           ? Number(initialValues.year_built)
           : undefined,
+      youtube_url: initialValues?.youtube_url || "",
+      kuula_url: initialValues?.kuula_url || "",
     },
   });
 
@@ -260,6 +272,8 @@ export default function ListingForm({
           initialValues?.year_built !== ""
             ? Number(initialValues.year_built)
             : undefined,
+        youtube_url: initialValues?.youtube_url || "",
+        kuula_url: initialValues?.kuula_url || "",
       });
     }
   }, [initialValues, form]);
@@ -1207,20 +1221,66 @@ export default function ListingForm({
           </div>
         </div>
         {/* Supabase Image Manager Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">
-            {t("photo_gallery_label")}
-          </h3>
-          <SupabaseImageManager
-            bucket={process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
-            folder={currentUser ? `uploads/${currentUser?.id}/tmp` : undefined}
-            maxFiles={30}
-            maxFileSize={10 * 1024 * 1024}
-            onChange={setUploadedImages}
-            initialImages={uploadedImages}
-            watermarkUrl={watermarkUrl}
-          />
+        {/* Media Content Section - Photos, Video, and Virtual Tour */}
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">
+            {t("media_content_label")}
+          </h2>
+          
+          {/* Photo Gallery */}
+          <div>
+            <h3 className="text-sm font-medium mb-2 text-gray-700">
+              {t("photo_gallery_label")}
+            </h3>
+            <SupabaseImageManager
+              bucket={process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET}
+              folder={currentUser ? `uploads/${currentUser?.id}/tmp` : undefined}
+              maxFiles={30}
+              maxFileSize={10 * 1024 * 1024}
+              onChange={setUploadedImages}
+              initialImages={uploadedImages}
+              watermarkUrl={watermarkUrl}
+            />
+          </div>
+
+          {/* Video and Virtual Tour URLs */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="youtube_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("youtube_url_label")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("youtube_url_placeholder")}
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="kuula_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("kuula_url_label")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("kuula_url_placeholder")}
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
+
         {typeof children === "function"
           ? children({ isSubmitting: isLoading, uploadedImages, currentUser })
           : children}

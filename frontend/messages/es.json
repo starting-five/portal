@@ -163,12 +163,17 @@
         "bedrooms": "Habitaciones",
         "building_size": "Superficie construida",
         "features_heading": "Características",
+        "gallery": "Galería",
         "land_size": "Superficie de terreno",
         "overview_heading": "Resumen",
         "ownership": "Tipo de propiedad",
         "photos": "Fotos",
         "property_id": "ID de la propiedad",
         "property_type": "Tipo de propiedad",
+        "show_less": "Menos",
+        "show_more": "Más",
+        "video": "Video",
+        "virtualTour": "Tour Virtual",
         "year_built": "Año de construcción"
     },
     "ListingForm": {
@@ -188,6 +193,9 @@
         "image_move_failed": "No se pudo mover la imagen",
         "image_upload_failed": "No se pudo subir la imagen",
         "images_header": "Imágenes",
+        "invalid_url": "Por favor ingresa una URL válida",
+        "kuula_url_label": "URL del Tour Virtual (Kuula)",
+        "kuula_url_placeholder": "https://kuula.co/post/...",
         "land_size_label": "Superficie de terreno (m²)",
         "land_size_placeholder": "ej. 300",
         "listing_create_failed": "No se pudo crear el listado.",
@@ -198,6 +206,7 @@
         "listing_updated_success": "¡Propiedad actualizada exitosamente!",
         "location_label": "Ubicación *",
         "location_placeholder": "Selecciona ubicación",
+        "media_content_label": "Contenido de Medios",
         "non_negative_error": "El valor debe ser cero o mayor.",
         "ownership_type_label": "Tipo de propiedad *",
         "ownership_type_placeholder": "Selecciona tipo de propiedad",
@@ -219,7 +228,9 @@
         "title_new": "Agregar Nuevo Listado",
         "title_placeholder": "Título de la propiedad",
         "year_built_label": "Año de construcción",
-        "year_built_placeholder": "ej. 2015"
+        "year_built_placeholder": "ej. 2015",
+        "youtube_url_label": "URL del Video de YouTube",
+        "youtube_url_placeholder": "https://www.youtube.com/watch?v=..."
     },
     "LocaleSwitcher": {
         "aria_label": "Cambiar idioma"

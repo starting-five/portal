@@ -125,6 +125,8 @@ CREATE TABLE IF NOT EXISTS listings (
   building_size_sqm INT,
   status_id INT REFERENCES listing_statuses(id),
   price NUMERIC(18, 2),
+  youtube_url VARCHAR(512),
+  kuula_url VARCHAR(512),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   year_built INT,

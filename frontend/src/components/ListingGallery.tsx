@@ -1,5 +1,6 @@
 "use client";
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
@@ -15,15 +16,19 @@ export type ListingGalleryImage = {
   alt_text?: string;
 };
 
-interface ListingGalleryProps {
-  images: ListingGalleryImage[];
-  onMainImageLeft?: (left: number) => void;
+export interface ListingGalleryProps {
+  images?: string[];
+  youtubeUrl?: string;
+  kuulaUrl?: string;
+  onMainImageLeft?: (leftPosition: number) => void;
   children?: React.ReactNode;
   onRowWidth?: (width: number) => void;
 }
 
 export default function ListingGallery({
   images,
+  youtubeUrl,
+  kuulaUrl,
   onMainImageLeft,
   children,
   onRowWidth,
@@ -31,6 +36,9 @@ export default function ListingGallery({
   const t = useTranslations("ListingDetail");
   const [open, setOpen] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [modalTab, setModalTab] = useState<"photos" | "video" | "tour">(
+    "photos"
+  );
   const imgs = images || [];
   const mainImg = imgs[0];
   const thumbs = imgs.slice(1, 5); // Up to 4 thumbnails
@@ -55,6 +63,88 @@ export default function ListingGallery({
   const MAIN_MAX = 600; // px
   const COL_TARGET = 300; // px (approx target column width)
   const GAP_PX = 16; // Tailwind gap-4 = 16px
+
+  // Helper to extract YouTube video ID
+  const getYouTubeVideoId = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname === "youtu.be") {
+        return urlObj.pathname.slice(1);
+      }
+      if (
+        urlObj.hostname.includes("youtube.com") &&
+        urlObj.searchParams.has("v")
+      ) {
+        return urlObj.searchParams.get("v");
+      }
+    } catch (e) {
+      // If URL parsing fails, return null
+    }
+    return null;
+  };
+
+  // Helper to convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string): string => {
+    const videoId = getYouTubeVideoId(url);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    return url;
+  };
+
+  // Helper to get video info from our API
+  const getVideoInfo = async (
+    url: string
+  ): Promise<{
+    aspectRatio: number;
+    embedUrl: string;
+    title: string;
+  } | null> => {
+    try {
+      const response = await fetch(
+        `/api/youtube-info?url=${encodeURIComponent(url)}`
+      );
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      const data = await response.json();
+      return {
+        aspectRatio: data.aspectRatio,
+        embedUrl: data.embedUrl,
+        title: data.title,
+      };
+    } catch (error) {
+      console.warn("Failed to fetch video info:", error);
+      return null;
+    }
+  };
+
+  // Convert Kuula URL to embed URL
+  const getKuulaEmbedUrl = (url: string): string | null => {
+    try {
+      // Handle kuula.co/share/TOUR_ID, kuula.co/tinyplanet/TOUR_ID, or kuula.co/post/TOUR_ID
+      const match = url.match(/kuula\.co\/(?:share|tinyplanet|post)\/([^/?]+)/);
+      if (match) {
+        const tourId = match[1];
+        return `https://kuula.co/share/${tourId}?embed=1&thumbs=1&nav=1&scene_list=1&ui=1`;
+      }
+    } catch (e) {
+      console.error("Invalid Kuula URL:", e);
+    }
+    return null;
+  };
+
+  const hasVideo = !!youtubeUrl;
+  const hasKuula = !!kuulaUrl;
+  const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
+  const [videoEmbedUrl, setVideoEmbedUrl] = useState<string | null>(null);
+  const [videoTitle, setVideoTitle] = useState<string | null>(null);
+  const [kuulaEmbedUrl, setKuulaEmbedUrl] = useState<string | null>(null);
+  const [modalDimensions, setModalDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Height sync logic
   const setColumnHeights = () => {
@@ -193,6 +283,106 @@ export default function ListingGallery({
     prevVisibleCols.current = visibleCols;
   }, [visibleCols]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (open) {
+      // Store original overflow style
+      const originalOverflow = document.body.style.overflow;
+
+      // Prevent body scroll
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        // Restore original overflow when modal closes
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [open]);
+
+  // Measure modal dimensions
+  useEffect(() => {
+    const measureModal = () => {
+      if (modalRef.current) {
+        const rect = modalRef.current.getBoundingClientRect();
+        setModalDimensions({
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    };
+
+    if (open) {
+      // Measure after modal is rendered
+      setTimeout(measureModal, 100);
+
+      // Re-measure on window resize
+      const handleResize = () => measureModal();
+      window.addEventListener("resize", handleResize);
+
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, [open]);
+
+  // Fetch video info when URL changes
+  useEffect(() => {
+    if (youtubeUrl && hasVideo) {
+      getVideoInfo(youtubeUrl).then((info) => {
+        if (info) {
+          setVideoAspectRatio(info.aspectRatio);
+          setVideoEmbedUrl(info.embedUrl);
+          setVideoTitle(info.title);
+        } else {
+          setVideoAspectRatio(null);
+          setVideoEmbedUrl(null);
+          setVideoTitle(null);
+        }
+      });
+    } else {
+      setVideoAspectRatio(null);
+      setVideoEmbedUrl(null);
+      setVideoTitle(null);
+    }
+  }, [youtubeUrl, hasVideo]);
+
+  // Setup Kuula embed URL when URL changes
+  useEffect(() => {
+    if (kuulaUrl && hasKuula) {
+      const embedUrl = getKuulaEmbedUrl(kuulaUrl);
+      setKuulaEmbedUrl(embedUrl);
+    } else {
+      setKuulaEmbedUrl(null);
+    }
+  }, [kuulaUrl, hasKuula]);
+
+  // Calculate video dimensions with 10% gaps (more space for video)
+  const calculateVideoSize = () => {
+    if (!modalDimensions || !videoAspectRatio) return null;
+
+    // Available space with 10% gaps (so 80% of modal dimensions)
+    const availableWidth = modalDimensions.width * 0.8; // 10% gap on each side
+    const availableHeight = (modalDimensions.height - 120) * 0.8; // 10% gap + space for tabs/controls
+
+    // Calculate dimensions that fit within available space while maintaining aspect ratio
+    const widthBasedHeight = availableWidth / videoAspectRatio;
+    const heightBasedWidth = availableHeight * videoAspectRatio;
+
+    if (widthBasedHeight <= availableHeight) {
+      // Width is the limiting factor
+      return {
+        width: availableWidth,
+        height: widthBasedHeight,
+      };
+    } else {
+      // Height is the limiting factor
+      return {
+        width: heightBasedWidth,
+        height: availableHeight,
+      };
+    }
+  };
+
+  const videoSize = calculateVideoSize();
+
   if (!mainImg) return null;
   // Helper to render alternating pattern
   const renderAlternatingGrid = () => {
@@ -208,12 +398,12 @@ export default function ListingGallery({
             className="w-full flex mb-2"
           >
             <div
-              className="w-full aspect-[3/2] relative rounded-lg overflow-hidden cursor-zoom-in"
+              className="w-full aspect-[3/2] relative rounded-lg overflow-hidden cursor-pointer"
               onClick={() => setLightboxIdx(largeImageIndex)}
             >
               <Image
-                src={imgs[largeImageIndex].url}
-                alt={imgs[largeImageIndex].alt_text || "Listing image"}
+                src={imgs[largeImageIndex]}
+                alt="Listing image"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 700px"
@@ -235,26 +425,26 @@ export default function ListingGallery({
           >
             {firstHalfIndex < imgs.length && (
               <div
-                className="flex-1 aspect-[3/2] relative rounded-lg overflow-hidden cursor-zoom-in"
+                className="flex-1 aspect-[3/2] relative rounded-lg overflow-hidden cursor-pointer"
                 onClick={() => setLightboxIdx(firstHalfIndex)}
               >
                 <Image
-                  src={imgs[firstHalfIndex].url}
-                  alt={imgs[firstHalfIndex].alt_text || "Listing image"}
+                  src={imgs[firstHalfIndex]}
+                  alt="Listing image"
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 340px"
+                  sizes="350px"
                 />
               </div>
             )}
             {secondHalfIndex < imgs.length && (
               <div
-                className="flex-1 aspect-[3/2] relative rounded-lg overflow-hidden cursor-zoom-in"
+                className="flex-1 aspect-[3/2] relative rounded-lg overflow-hidden cursor-pointer"
                 onClick={() => setLightboxIdx(secondHalfIndex)}
               >
                 <Image
-                  src={imgs[secondHalfIndex].url}
-                  alt={imgs[secondHalfIndex].alt_text || "Listing image"}
+                  src={imgs[secondHalfIndex]}
+                  alt="Listing image"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 340px"
@@ -291,7 +481,7 @@ export default function ListingGallery({
           {/* We'll switch to explicit grid columns below depending on visibleCols */}
           {/* Main image + text */}
           <div
-            className="rounded-lg overflow-hidden cursor-zoom-in relative aspect-[3/2] min-h-0"
+            className="rounded-lg overflow-hidden cursor-pointer relative aspect-[3/2] min-h-0"
             ref={mainRef}
             onClick={() => setOpen(true)}
             style={
@@ -305,8 +495,8 @@ export default function ListingGallery({
             }
           >
             <Image
-              src={mainImg.url}
-              alt={mainImg.alt_text || "Main image"}
+              src={mainImg}
+              alt="Main image"
               width={1200}
               height={800}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 68vw, 800px"
@@ -342,7 +532,7 @@ export default function ListingGallery({
               {thumbCols[0].map((img, i, arr) => (
                 <div
                   key={i}
-                  className="rounded-lg overflow-hidden flex-1 min-h-0 cursor-zoom-in"
+                  className="rounded-lg overflow-hidden flex-1 min-h-0 cursor-pointer"
                   style={{
                     minHeight: 0,
                     height: `calc((100% - ${(arr.length - 1) * GAP_PX}px) / ${
@@ -353,8 +543,8 @@ export default function ListingGallery({
                   onClick={() => setOpen(true)}
                 >
                   <Image
-                    src={img.url}
-                    alt={img.alt_text || `Thumb ${i + 1}`}
+                    src={img}
+                    alt={`Thumb ${i + 1}`}
                     width={300}
                     height={200}
                     sizes="(max-width: 640px) 50vw, 300px"
@@ -387,7 +577,7 @@ export default function ListingGallery({
               {thumbCols[1].map((img, i, arr) => (
                 <div
                   key={i}
-                  className="rounded-lg overflow-hidden flex-1 min-h-0 cursor-zoom-in"
+                  className="rounded-lg overflow-hidden flex-1 min-h-0 cursor-pointer"
                   style={{
                     minHeight: 0,
                     height: `calc((100% - ${(arr.length - 1) * GAP_PX}px) / ${
@@ -398,8 +588,8 @@ export default function ListingGallery({
                   onClick={() => setOpen(true)}
                 >
                   <Image
-                    src={img.url}
-                    alt={img.alt_text || `Thumb ${i + 3}`}
+                    src={img}
+                    alt={`Thumb ${i + 3}`}
                     width={300}
                     height={200}
                     sizes="(max-width: 640px) 50vw, 300px"
@@ -426,9 +616,42 @@ export default function ListingGallery({
         <ModalSheet
           onClose={() => setOpen(false)}
           enableEscape={lightboxIdx === null}
+          modalRef={modalRef}
         >
           <div className="flex items-center h-14 px-4 border-b border-gray-200 relative">
-            <div className="mx-auto font-semibold text-lg">{t("photos")}</div>
+            {/* Tab navigation in modal using ShadCN Tabs */}
+            <Tabs
+              value={modalTab}
+              onValueChange={(value) =>
+                setModalTab(value as "photos" | "video" | "tour")
+              }
+              className="flex-1"
+            >
+              <TabsList className="bg-transparent p-0 h-auto gap-6 justify-start">
+                <TabsTrigger
+                  value="photos"
+                  className="cursor-pointer data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-0 px-3 py-2 text-sm font-medium border-b-2 transition-colors data-[state=active]:border-b-2 data-[state=active]:border-b-blue-600 data-[state=active]:text-blue-600 border-transparent text-gray-500 hover:text-gray-700 rounded-none"
+                >
+                  {t("gallery")}
+                </TabsTrigger>
+                {hasVideo && (
+                  <TabsTrigger
+                    value="video"
+                    className="cursor-pointer data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-0 px-3 py-2 text-sm font-medium border-b-2 transition-colors data-[state=active]:border-b-2 data-[state=active]:border-b-blue-600 data-[state=active]:text-blue-600 border-transparent text-gray-500 hover:text-gray-700 rounded-none"
+                  >
+                    {t("video")}
+                  </TabsTrigger>
+                )}
+                {hasKuula && (
+                  <TabsTrigger
+                    value="tour"
+                    className="cursor-pointer data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-0 px-3 py-2 text-sm font-medium border-b-2 transition-colors data-[state=active]:border-b-2 data-[state=active]:border-b-blue-600 data-[state=active]:text-blue-600 border-transparent text-gray-500 hover:text-gray-700 rounded-none"
+                  >
+                    {t("virtualTour")}
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </Tabs>
             <button
               className="text-2xl text-gray-700 hover:text-black absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
               onClick={() => setOpen(false)}
@@ -436,19 +659,167 @@ export default function ListingGallery({
             >
               &times;
             </button>
-            {/* Optionally add tabs for Floor plan, Street view, etc. */}
           </div>
-          {/* Gallery content */}
-          <div className="flex-1 overflow-y-auto w-full flex justify-center">
-            <div className="w-full max-w-3xl mx-auto">
-              {renderAlternatingGrid()}
-            </div>
+
+          {/* Tab content using conditional rendering since TabsContent needs to be in same Tabs wrapper as TabsList */}
+          <div className="flex-1 overflow-hidden">
+            {modalTab === "photos" && (
+              <div className="flex-1 overflow-y-auto w-full h-full flex justify-center">
+                <div className="w-full max-w-3xl mx-auto">
+                  {renderAlternatingGrid()}
+                </div>
+              </div>
+            )}
+
+            {modalTab === "video" && (
+              <div className="flex-1 overflow-hidden w-full h-full flex justify-center items-center">
+                {hasVideo && youtubeUrl ? (
+                  <>
+                    {videoEmbedUrl && videoSize ? (
+                      <div
+                        className="rounded-lg overflow-hidden shadow-lg"
+                        style={{
+                          width: `${videoSize.width}px`,
+                          height: `${videoSize.height}px`,
+                        }}
+                      >
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={videoEmbedUrl}
+                          title={videoTitle || "YouTube video player"}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : videoEmbedUrl ? (
+                      <div className="rounded-lg overflow-hidden shadow-lg w-full max-w-md aspect-video">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={videoEmbedUrl}
+                          title={videoTitle || "YouTube video player"}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-64 text-gray-500">
+                        Loading video...
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // Empty state placeholder for video
+                  <div className="flex flex-col items-center justify-center w-full max-w-md aspect-video mx-auto">
+                    <div className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 w-full h-full flex items-center justify-center">
+                      {/* Video camera icon with slash */}
+                      <div className="relative">
+                        <svg
+                          className="w-16 h-16 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                          />
+                        </svg>
+                        {/* Diagonal slash */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-20 h-0.5 bg-red-400 rotate-45"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-gray-500 text-center">
+                      No video available
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {modalTab === "tour" && (
+              <div className="flex-1 overflow-hidden w-full h-full flex justify-center items-center">
+                {hasKuula && kuulaUrl ? (
+                  <>
+                    {kuulaEmbedUrl && videoSize ? (
+                      <div
+                        className="rounded-lg overflow-hidden shadow-lg"
+                        style={{
+                          width: `${videoSize.width}px`,
+                          height: `${videoSize.height}px`,
+                        }}
+                      >
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={kuulaEmbedUrl}
+                          title="Virtual Tour"
+                          frameBorder="0"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : kuulaEmbedUrl ? (
+                      <div className="rounded-lg overflow-hidden shadow-lg w-full max-w-md aspect-video">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={kuulaEmbedUrl}
+                          title="Virtual Tour"
+                          frameBorder="0"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-64 text-gray-500">
+                        Loading virtual tour...
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // Empty state placeholder for virtual tour
+                  <div className="flex flex-col items-center justify-center w-full max-w-md aspect-video mx-auto">
+                    <div className="relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 w-full h-full flex items-center justify-center">
+                      {/* VR/360 icon with slash */}
+                      <div className="relative">
+                        <svg
+                          className="w-16 h-16 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
+                          />
+                        </svg>
+                        {/* Diagonal slash */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-20 h-0.5 bg-red-400 rotate-45"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-gray-500 text-center">
+                      No virtual tour available
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </ModalSheet>
       )}
       {lightboxIdx !== null && (
         <ListingGalleryLightbox
-          images={imgs}
+          images={imgs.map((url) => ({ url, alt_text: "" }))}
           initialIndex={lightboxIdx}
           onClose={() => setLightboxIdx(null)}
         />
@@ -462,10 +833,12 @@ function ModalSheet({
   children,
   onClose,
   enableEscape,
+  modalRef,
 }: {
   children: React.ReactNode;
   onClose: () => void;
   enableEscape?: boolean;
+  modalRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   React.useEffect(() => {
     if (!enableEscape) return;
@@ -481,6 +854,7 @@ function ModalSheet({
       onClick={onClose}
     >
       <div
+        ref={modalRef}
         className="relative w-full h-full m-4 sm:m-8 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] bg-white flex flex-col overflow-hidden rounded-2xl 2xl:rounded-3xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >

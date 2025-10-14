@@ -63,6 +63,8 @@ export type Property = {
   price_per_sqm?: string | null;
   features?: number[];
   description?: string;
+  youtube_url?: string | null;
+  kuula_url?: string | null;
 };
 
 interface PropertyCardProps {
