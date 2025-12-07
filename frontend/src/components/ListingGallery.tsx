@@ -122,11 +122,65 @@ export default function ListingGallery({
   // Convert Kuula URL to embed URL
   const getKuulaEmbedUrl = (url: string): string | null => {
     try {
-      // Handle kuula.co/share/TOUR_ID, kuula.co/tinyplanet/TOUR_ID, or kuula.co/post/TOUR_ID
-      const match = url.match(/kuula\.co\/(?:share|tinyplanet|post)\/([^/?]+)/);
-      if (match) {
-        const tourId = match[1];
-        return `https://kuula.co/share/${tourId}?embed=1&thumbs=1&nav=1&scene_list=1&ui=1`;
+      console.log("Processing Kuula URL:", url);
+      
+      // Handle various Kuula URL formats including custom domains:
+      // Standard: kuula.co/share/TOUR_ID, kuula.co/tinyplanet/TOUR_ID, kuula.co/post/TOUR_ID
+      // Custom domains: *.viewin360.co/share/collection/TOUR_ID or similar patterns
+      const patterns = [
+        // Standard kuula.co patterns
+        /(?:https?:\/\/)?(?:www\.)?kuula\.co\/(?:share|tinyplanet|post)\/([^/?#]+)/,
+        
+        // Custom domain patterns (like viewin360.co)
+        /(?:https?:\/\/)?([^\/]+\.viewin360\.co)\/share\/collection\/([^/?#]+)/,
+        /(?:https?:\/\/)?([^\/]+\.viewin360\.co)\/share\/([^/?#]+)/,
+        
+        // Generic custom domain patterns for Kuula-powered sites
+        /(?:https?:\/\/)?([^\/]+)\/share\/collection\/([^/?#]+)/,
+        
+        // Direct kuula.co links
+        /(?:https?:\/\/)?(?:www\.)?kuula\.co\/([^/?#]+)$/
+      ];
+      
+      let tourId = null;
+      let customDomain = null;
+      
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) {
+          console.log("Matched pattern:", pattern.toString());
+          
+          if (pattern.source.includes('viewin360') || pattern.source.includes('collection')) {
+            // Custom domain match - extract both domain and tour ID
+            customDomain = match[1];
+            tourId = match[2];
+            console.log("Custom domain:", customDomain, "Tour ID:", tourId);
+          } else {
+            // Standard kuula.co match
+            tourId = match[1];
+            console.log("Standard kuula.co Tour ID:", tourId);
+          }
+          break;
+        }
+      }
+      
+      if (tourId && tourId.length > 3) {
+        let embedUrl;
+        
+        if (customDomain) {
+          // For custom domains, try to use the same domain for embedding
+          embedUrl = `https://${customDomain}/share/collection/${tourId}?embed=1&thumbs=1&nav=1&scene_list=1&ui=1`;
+        } else {
+          // Standard kuula.co embedding
+          embedUrl = `https://kuula.co/share/${tourId}?embed=1&thumbs=1&nav=1&scene_list=1&ui=1`;
+        }
+        
+        console.log("Generated embed URL:", embedUrl);
+        return embedUrl;
+      } else {
+        console.warn("Kuula URL doesn't match expected patterns or invalid tour ID:", url);
+        console.warn("Extracted tour ID:", tourId);
+        console.warn("Custom domain:", customDomain);
       }
     } catch (e) {
       console.error("Invalid Kuula URL:", e);
